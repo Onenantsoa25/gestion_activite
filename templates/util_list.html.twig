@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Liste des utils</title>
+</head>
+<body>
+    <h1>Liste des utils</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nom</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if utils is empty %}
+                <tr><td colspan="2">Aucun util trouvé</td></tr>
+            {% else %}
+                {% for util in utils %}
+                    <tr>
+                        <td>{{ util.id }}</td>
+                        <td>{{ util.name }}</td>
+                    </tr>
+                {% endfor %}
+            {% endif %}
+        </tbody>
+    </table>
+</body>
+</html>

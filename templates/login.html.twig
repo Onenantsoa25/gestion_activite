@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion - Gestion d'activités</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/assets/css/style.css" rel="stylesheet">
+</head>
+<body>
+    <div class="background-pattern"></div>
+    
+    <div class="main-container">
+        <div class="container-fluid">
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <div class="content-section">
+                        <h1 class="connect-title">CONNECTEZ-VOUS</h1>
+                        <p class="connect-subtitle">pour accéder à votre</p>
+                        <p class="connect-subtitle" style="color: #3498db; font-weight: 500;">espace de gestion</p>
+
+                        <p class="description-text">
+                            Une plateforme intuitive pour organiser, suivre et optimiser toutes vos activités en temps réel.
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="col-lg-6">
+                    <div class="content-section">
+                        <div class="text-center mb-4">
+                            <h2 class="form-title">Connexion</h2>
+                            <p class="form-subtitle">Accédez à votre espace de gestion</p>
+                        </div>
+                        
+                        <div class="form-container mx-auto">
+                            <form method="POST" action="/login_check">
+                                <div class="mb-3">
+                                    <label for="matricule" class="form-label">Matricule</label>
+                                    <input type="text" class="form-control" id="matricule" name="_username" required>
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <label for="password" class="form-label">Mot de passe</label>
+                                    <input type="password" class="form-control" id="password" name="_password" required>
+                                </div>
+                                
+                                <input type="hidden" name="_csrf_token" value="">
+                                
+                                <button type="submit" class="btn btn-connect">Se connecter</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="footer-text">
+        Esprit d'équipe & Excellence
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

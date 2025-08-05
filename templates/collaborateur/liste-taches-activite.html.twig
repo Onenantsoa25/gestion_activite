@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Liste des tâches d'une activité{% endblock %}</title>
+    <!-- Bootstrap CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
+    <!-- Bootstrap Icons CDN (IMPORTANT pour les icônes du sidebar) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <style>
+        /* Styles pour le corps et le padding pour le sidebar */
+        body {
+            padding-left: 280px; /* Largeur du sidebar */
+            background-color: #F5F5F5; /* Couleur de fond gris très doux pour le contenu principal */
+        }
+        /* Pour la responsivité sur mobile, vous pourriez vouloir cacher le sidebar fixe et utiliser un offcanvas */
+        @media (max-width: 767.98px) { /* Moins de 768px (taille md de Bootstrap) */
+            body {
+                padding-left: 0; /* Pas de padding sur mobile si le sidebar est un offcanvas */
+            }
+            .sidebar-fixed-desktop { /* Cache le sidebar fixe sur mobile */
+                display: none !important;
+            }
+        }
+
+        /* Styles pour les cartes du tableau de bord (réutilisés ici) */
+        .card {
+            border-radius: 12px; /* Bords plus arrondis */
+            border: 1px solid #e0e0e0; /* Bordure subtile */
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1); /* Ombre moderne et flottante */
+        }
+
+        /* Styles pour les en-têtes de tableau grisés */
+        .table-header-gray {
+            background-color: #e9ecef; /* Couleur grise claire de Bootstrap */
+            vertical-align: middle; /* Alignement vertical au milieu */
+        }
+
+        /* Centrer le contenu des cellules des boutons */
+        .table td.text-center-buttons {
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        /* Rendre la colonne du bouton "Terminer" compacte */
+        .col-action-button {
+            width: 1%; /* Prend la largeur minimale nécessaire */
+            white-space: nowrap; /* Empêche le texte du bouton de passer à la ligne */
+            text-align: center; /* Centrer le contenu de l'en-tête de cette colonne */
+        }
+    </style>
+    {% block stylesheets %}{% endblock %}
+</head>
+<body>
+    {# Inclusion directe du Sidebar #}
+    <div class="sidebar-fixed-desktop">
+        {% include 'components/sidebar.html.twig' %}
+    </div>
+
+    <main class="container-fluid py-4">
+        <h1 class="mb-4 text-center">Liste des tâches d'une activité a terminer</h1>
+
+        <div class="row g-4">
+            {# Section du tableau des tâches dans une carte #}
+            <div class="col-md-12">
+                <div class="card h-100">
+                    <div class="card-body p-0">
+                        <h5 class="card-title mb-3 px-4 pt-4 text-center">Détails des tâches</h5>
+                        <div class="table-responsive">
+                            <table class="table table-hover table-bordered mb-0">
+                                <thead>
+                                    <tr>
+                                        <th scope="col" class="table-header-gray">Libellé</th>
+                                        <th scope="col" class="table-header-gray">Date d'échéance</th>
+                                        <th scope="col" class="table-header-gray">Priorité</th>
+                                        <th scope="col" class="table-header-gray">Temps d'estimation</th>
+                                        <th scope="col" class="table-header-gray">Statut</th>
+                                        <th scope="col" class="table-header-gray col-action-button">Temps passé</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {# Exemple de tâche terminée #}
+                                    <tr data-task-id="1" data-task-status="terminée">
+                                        <td class="align-middle">Préparer rapport mensuel</td>
+                                        <td class="align-middle">30/07/2025</td>
+                                        <td class="align-middle">Urgente</td>
+                                        <td class="align-middle">3</td>
+                                        <td class="align-middle">terminée</td>
+                                        <td class="align-middle text-center">2</td>
+                                    </tr>
+                                    {# Exemple de tâche en cours avec bouton "Terminer" #}
+                                    <tr data-task-id="2" data-task-status="encours">
+                                        <td class="align-middle">Préparer rapport mensuel</td>
+                                        <td class="align-middle">30/07/2025</td>
+                                        <td class="align-middle">Urgente</td>
+                                        <td class="align-middle">3</td>
+                                        <td class="align-middle">Encours</td>
+                                        <td class="text-center-buttons">
+                                            <button type="button" class="btn btn-sm btn-danger end-task-btn">Terminer</button>
+                                        </td>
+                                    </tr>
+                                    {# Ajoutez d'autres lignes de données ici si nécessaire #}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# Ce bloc peut être rempli par les templates qui étendent ce layout #}
+        {% block page_content %}{% endblock %}
+    </main>
+
+    <!-- Bootstrap JS CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
+    {% block javascripts %}{% endblock %}
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.end-task-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const row = this.closest('tr');
+                    const taskId = row.dataset.taskId;
+                    const statusCell = row.querySelector('td:nth-child(5)'); // La 5ème colonne est le statut
+
+                    // Désactiver le bouton
+                    this.disabled = true;
+                    this.textContent = 'Terminé'; // Changer le texte du bouton
+
+                    // Mettre à jour le statut dans la cellule
+                    statusCell.textContent = 'terminée';
+                    row.dataset.taskStatus = 'terminée'; // Mettre à jour le statut dans le dataset
+
+                    console.log(`Tâche ${taskId} terminée.`);
+                    // Ici, vous intégreriez votre logique pour envoyer la mise à jour au backend Symfony
+                });
+            });
+        });
+    </script>
+</body>
+</html>

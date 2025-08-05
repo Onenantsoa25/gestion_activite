@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Saisie de temps passé activité{% endblock %}</title>
+    <!-- Bootstrap CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
+    <!-- Bootstrap Icons CDN (IMPORTANT pour les icônes du sidebar) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <style>
+        /* Styles pour le corps et le padding pour le sidebar */
+        body {
+            padding-left: 280px; /* Largeur du sidebar */
+            background-color: #F5F5F5; /* Couleur de fond gris très doux pour le contenu principal */
+        }
+        /* Pour la responsivité sur mobile, vous pourriez vouloir cacher le sidebar fixe et utiliser un offcanvas */
+        @media (max-width: 767.98px) { /* Moins de 768px (taille md de Bootstrap) */
+            body {
+                padding-left: 0; /* Pas de padding sur mobile si le sidebar est un offcanvas */
+            }
+            .sidebar-fixed-desktop { /* Cache le sidebar fixe sur mobile */
+                display: none !important;
+            }
+        }
+
+        /* Styles pour les cartes */
+        .card {
+            border-radius: 12px; /* Bords plus arrondis */
+            border: 1px solid #e0e0e0; /* Bordure subtile */
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08); /* Ombre plus douce et moderne */
+        }
+
+        /* Styles pour les labels de formulaire */
+        .form-label {
+            font-weight: 500; /* Rendre les labels un peu plus gras */
+            color: #343a40; /* Couleur de texte foncée */
+            margin-bottom: 0.5rem; /* Espacement sous le label */
+        }
+
+        /* Styles pour les inputs */
+        .form-control, .form-select {
+            border-radius: 8px; /* Bords arrondis pour les inputs */
+            border: 1px solid #ced4da; /* Bordure standard */
+            padding: 0.75rem 1rem; /* Padding confortable */
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.05); /* Ombre interne subtile */
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: #80bdff; /* Couleur de focus Bootstrap */
+            box-shadow: 0 0 0 0.25rem rgba(13,110,253,.25); /* Ombre de focus Bootstrap */
+        }
+
+        /* Styles pour le bouton de fichier */
+        .btn-file-upload {
+            background-color: #e9ecef; /* Couleur de fond grise */
+            color: #343a40; /* Couleur de texte foncée */
+            border: 1px solid #ced4da; /* Bordure */
+            border-radius: 8px;
+            padding: 0.75rem 1.25rem;
+            font-weight: 500;
+            transition: all 0.2s ease-in-out;
+        }
+        .btn-file-upload:hover {
+            background-color: #dee2e6;
+            border-color: #adb5bd;
+        }
+        .btn-file-upload input[type="file"] {
+            position: absolute;
+            top: 0;
+            right: 0;
+            min-width: 100%;
+            min-height: 100%;
+            font-size: 100px;
+            text-align: right;
+            filter: alpha(opacity=0);
+            opacity: 0;
+            outline: none;
+            background: white;
+            cursor: inherit;
+            display: block;
+        }
+    </style>
+    {% block stylesheets %}{% endblock %}
+</head>
+<body>
+    {# Inclusion directe du Sidebar #}
+    <div class="sidebar-fixed-desktop">
+        {% include 'components/sidebar.html.twig' %}
+    </div>
+
+    <main class="container-fluid py-5">
+        <h1 class="mb-5 text-center">Saisie de temps passé activité</h1>
+
+        <div class="row justify-content-center">
+            {# Augmentation de la largeur de la colonne pour la carte #}
+            <div class="col-md-8 col-lg-6"> {# Prend 66% sur md, 50% sur lg #}
+                <div class="card p-5"> {# Augmentation du padding interne de la carte #}
+                    <div class="card-body">
+                        <form>
+                            <div class="mb-4">
+                                <label for="tempsPasse" class="form-label">Temps passé</label>
+                                <input type="number" class="form-control" id="tempsPasse" placeholder="Ex: 8" min="0" step="0.5">
+                            </div>
+                            <div class="mb-4">
+                                <label for="commentaire" class="form-label">Commentaire</label>
+                                <textarea class="form-control" id="commentaire" rows="3" placeholder="Ajoutez un commentaire ici..."></textarea>
+                            </div>
+                            <div class="mb-5"> {# Marge plus grande pour séparer du bouton Terminer #}
+                                <label class="form-label d-block">Livrable</label>
+                                <div class="position-relative d-inline-block"> {# Pour positionner le input file sur le bouton #}
+                                    {# <button type="button" class="btn btn-file-upload">Choisir un fichier</button> #}
+                                    <input type="file" id="livrableFichier" class="form-control-file">
+                                </div>
+                            </div>
+                            <div class="text-center mt-5"> {# Marge supérieure pour séparer du contenu #}
+                                <button type="submit" class="btn btn-primary btn-lg">Terminer</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% block page_content %}{% endblock %}
+    </main>
+
+    <!-- Bootstrap JS CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
+    {% block javascripts %}{% endblock %}
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Logique pour la soumission du formulaire (à implémenter côté Symfony)
+            document.querySelector('form').addEventListener('submit', function(event) {
+                event.preventDefault(); // Empêche la soumission par défaut du formulaire
+
+                const tempsPasse = document.getElementById('tempsPasse').value;
+                const commentaire = document.getElementById('commentaire').value;
+                const livrableFichier = document.getElementById('livrableFichier').files[0];
+
+                console.log('Temps passé:', tempsPasse);
+                console.log('Commentaire:', commentaire);
+                if (livrableFichier) {
+                    console.log('Fichier livrable:', livrableFichier.name);
+                } else {
+                    console.log('Aucun fichier livrable sélectionné.');
+                }
+
+                // Ici, vous enverriez ces données à votre backend Symfony via Fetch API ou un formulaire traditionnel
+                // Exemple (pseudo-code pour Fetch API):
+                /*
+                const formData = new FormData();
+                formData.append('tempsPasse', tempsPasse);
+                formData.append('commentaire', commentaire);
+                if (livrableFichier) {
+                    formData.append('livrable', livrableFichier);
+                }
+
+                fetch('/api/save-time-entry', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Succès:', data);
+                    // Afficher un message de succès ou rediriger
+                })
+                .catch(error => {
+                    console.error('Erreur:', error);
+                    // Afficher un message d'erreur
+                });
+                */
+            });
+        });
+    </script>
+</body>
+</html>

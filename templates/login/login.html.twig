@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion - Application de Gestion d'Activité</title>
+    <!-- Bootstrap CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
+    <style>
+        /* Styles personnalisés pour affiner le design, si nécessaire, mais en minimisant */
+        /* Pour les inputs avec bordure inférieure uniquement */
+        .form-control-bottom-border {
+            border: none;
+            border-bottom: 1px solid #ced4da; /* Couleur de bordure par défaut de Bootstrap */
+            border-radius: 0;
+            padding-left: 0;
+            padding-right: 0;
+        }
+        .form-control-bottom-border:focus {
+            box-shadow: none;
+            border-color: #0d6efd; /* Couleur de bordure au focus de Bootstrap (primary) */
+        }
+    </style>
+</head>
+<body>
+    <div class="d-flex align-items-center justify-content-center vh-100 bg-white">
+        <div class="card shadow-lg rounded-lg overflow-hidden" style="max-width: 900px; width: 100%;">
+            <div class="card-body p-0 row g-0">
+                <!-- Section Gauche -->
+                <div class="col-md-6 p-5 d-flex flex-column justify-content-center bg-light">
+                    <h1 class="fs-2 fw-bold text-dark mb-4">CONNECTEZ-VOUS</h1>
+                    <p class="fs-5 text-secondary mb-4">
+                        pour accéder à <br />
+                        <span class="fw-semibold">votre espace de gestion d'activités</span>
+                    </p>
+                    <p class="text-muted">
+                        Gérez et suivez toutes vos activités <br />
+                        efficacement, centralisez vos informations <br />
+                        et optimisez votre productivité.
+                    </p>
+                </div>
+
+                <!-- Section Droite - Formulaire de Connexion -->
+                <div class="col-md-6 p-5 d-flex flex-column justify-content-center align-items-center">
+                    <div class="text-center mb-5">
+                        <h2 class="fs-5 fw-semibold text-primary">BANKY FOIBEN'I MADAGASIKARA</h2>
+                    </div>
+
+                    <form class="w-100" style="max-width: 350px;">
+                        <div class="mb-4">
+                            <label for="matricule" class="form-label text-secondary">Matricule</label>
+                            <input type="text" class="form-control form-control-bottom-border" id="matricule" placeholder="Matricule">
+                        </div>
+                        <div class="mb-4">
+                            <label for="password" class="form-label text-secondary">Mot de passe</label>
+                            <input type="password" class="form-control form-control-bottom-border" id="password" placeholder="Mot de passe">
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100 fw-bold py-3 rounded-pill mt-4">
+                            Se connecter
+                        </button>
+                    </form>
+                    <p class="text-muted mt-5">Esprit d'équipe & Excellence</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
+</body>
+</html>

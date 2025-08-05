@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Les tâches de l'activité{% endblock %}</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+
+    <style>
+        body {
+            padding-left: 280px;
+            background-color: #F5F5F5;
+        }
+        @media (max-width: 767.98px) {
+            body { padding-left: 0; }
+            .sidebar-fixed-desktop { display: none !important; }
+        }
+
+        .card {
+            border-radius: 12px;
+            border: 1px solid #e0e0e0;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+
+        .table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-bottom: 0;
+            overflow: hidden;
+        }
+
+        .table thead th {
+            color: #555;
+            font-weight: 600;
+            padding: 0.8rem 1.2rem;
+            text-align: left;
+            border-bottom: 2px solid #e0e0e0;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 0.05em;
+            border-right: 1px solid #e0e0e0;
+        }
+
+        .table thead th:last-child {
+            border-right: none;
+        }
+
+        .table tbody td {
+            padding: 0.8rem 1.2rem;
+            vertical-align: middle;
+            border-bottom: 1px solid #eee;
+            border-right: 1px solid #eee;
+            color: #333;
+        }
+
+        .table tbody td:last-child {
+            border-right: none;
+        }
+
+        .table-hover tbody tr:hover {
+            background-color: #f8f9fa;
+            cursor: pointer;
+        }
+
+        .table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .text-center-buttons {
+            text-align: center;
+            vertical-align: middle;
+            width: 1%;
+            white-space: nowrap;
+        }
+
+        .btn-assign {
+            background-color: #0d6efd;
+            color: white;
+            border-radius: 6px;
+            padding: 0.6rem 1.2rem;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: background-color 0.2s ease, transform 0.1s ease;
+        }
+
+        .btn-assign:hover {
+            background-color: #0b5ed7;
+            transform: translateY(-1px);
+        }
+
+        .btn-assign:active {
+            transform: translateY(0);
+        }
+
+        .btn-icon {
+            padding: 0.5rem 0.75rem;
+            font-size: 1rem;
+            line-height: 1;
+        }
+    </style>
+    {% block stylesheets %}{% endblock %}
+</head>
+<body>
+    <div class="sidebar-fixed-desktop">
+        {% include 'components/sidebar.html.twig' %}
+    </div>
+
+    <main class="container-fluid py-5">
+        <!-- ✅ Titre avec icône -->
+        <h1 class="mb-5 text-center">
+            <i class="bi bi-check2-square me-2"></i> <!-- Icône "tâches" -->
+            Les tâches de l'activité {{ activityId is defined ? activityId : '1' }}
+        </h1>
+
+        <div class="row justify-content-center">
+            <div class="col-md-11 col-lg-10">
+                <div class="card h-100">
+                    <div class="card-body p-0">
+                        <h5 class="card-title mb-3 px-4 pt-4 text-center">
+                            <i class="bi bi-list-task me-2"></i> <!-- Icône liste -->
+                            Détails des tâches
+                        </h5>
+
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead>
+                                    <tr>
+                                        <th><i class="bi bi-file-earmark-text me-1"></i> Tâche</th>
+                                        <th><i class="bi bi-calendar-event me-1"></i> Date d'échéance</th>
+                                        <th class="text-center-buttons"><i class="bi bi-person-lines-fill me-1"></i> Collaborateur attribué</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>tache 1</td>
+                                        <td>30-07-2025</td>
+                                        <td class="text-center-buttons">
+                                            <i class="bi bi-person-check text-success"></i> Collaborateur 1
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>tache 2</td>
+                                        <td>01-07-2025</td>
+                                        <td class="text-center-buttons">
+                                            <button type="button" class="btn btn-assign btn-icon" data-task-id="2" title="Attribuer">
+                                                <i class="bi bi-person-plus"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    {# D'autres lignes ici #}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% block page_content %}{% endblock %}
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    {% block javascripts %}{% endblock %}
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.btn-assign').forEach(button => {
+                button.addEventListener('click', function() {
+                    const taskId = this.dataset.taskId;
+                    console.log(`Bouton 'Attribuer' cliqué pour la tâche ID: ${taskId}`);
+                    // Redirection ou ouverture modal ici
+                });
+            });
+        });
+    </script>
+</body>
+</html>

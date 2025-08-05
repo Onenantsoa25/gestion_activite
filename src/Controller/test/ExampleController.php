@@ -1,15 +1,15 @@
 <?php
-namespace App\Controller;
+namespace App\Controller\test;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use App\Entity\Util;
+use App\Entity\test\Util;
 
 class ExampleController extends AbstractController
 {
     // Route pour afficher une vue avec des données (model-view)
-    #[Route('/', name: 'app_accueil')]
+    #[Route('/aaa', name: 'app_accueil1')]
     public function accueil(): Response
     {
         $nom = 'Manoa';

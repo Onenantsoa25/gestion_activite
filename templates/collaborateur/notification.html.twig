@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Notification{% endblock %}</title>
+    <!-- Bootstrap CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
+    <!-- Bootstrap Icons CDN (IMPORTANT pour les icônes du sidebar) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <style>
+        /* Styles pour le corps et le padding pour le sidebar */
+        body {
+            padding-left: 280px; /* Largeur du sidebar */
+            background-color: #F5F5F5; /* Couleur de fond gris très doux pour le contenu principal */
+        }
+        /* Pour la responsivité sur mobile, vous pourriez vouloir cacher le sidebar fixe et utiliser un offcanvas */
+        @media (max-width: 767.98px) { /* Moins de 768px (taille md de Bootstrap) */
+            body {
+                padding-left: 0; /* Pas de padding sur mobile si le sidebar est un offcanvas */
+            }
+            .sidebar-fixed-desktop { /* Cache le sidebar fixe sur mobile */
+                display: none !important;
+            }
+        }
+
+        /* Styles pour les cartes de notification */
+        .notification-card {
+            border-radius: 12px; /* Bords plus arrondis */
+            border: 1px solid #e0e0e0; /* Bordure subtile */
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08); /* Ombre plus douce et moderne */
+            margin-bottom: 1.5rem; /* Espacement entre les cartes */
+            background-color: #ffffff; /* Fond blanc pour les cartes */
+        }
+        .notification-card.read {
+            background-color: #f8f9fa; /* Fond légèrement grisé pour les notifications lues */
+            opacity: 0.8; /* Légèrement moins opaque pour les notifications lues */
+        }
+        .notification-card .card-body {
+            padding: 1.5rem; /* Padding interne confortable */
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem; /* Espacement entre les éléments internes */
+        }
+        .notification-card .notification-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        .notification-card .notification-label {
+            font-weight: 500;
+            color: #343a40;
+            flex-grow: 1; /* Permet au libellé de prendre l'espace disponible */
+        }
+        .notification-card .notification-date {
+            font-size: 0.875rem;
+            color: #6c757d;
+            white-space: nowrap; /* Empêche la date de passer à la ligne */
+        }
+        .notification-card .notification-actions {
+            text-align: right; /* Aligner le bouton à droite */
+        }
+
+        /* Styles pour le bouton "Marquez comme lue" */
+        .mark-as-read-btn {
+            font-size: 0.875rem; /* Taille de police légèrement plus petite */
+            padding: 0.5rem 1rem; /* Padding ajusté */
+            border-radius: 8px; /* Bords arrondis */
+        }
+    </style>
+    {% block stylesheets %}{% endblock %}
+</head>
+<body>
+    {# Inclusion directe du Sidebar #}
+    <div class="sidebar-fixed-desktop">
+        {% include 'components/sidebar.html.twig' %}
+    </div>
+
+    <main class="container-fluid py-5">
+        <div class="text-center mb-5">
+            <h1 class="display-4 fw-bold mb-2">Notification</h1>
+            <p class="lead text-muted">Gérez vos alertes et messages importants ici.</p>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-md-10 col-lg-8"> {# Largeur du conteneur des notifications #}
+                {# Liste des notifications sous forme de cartes #}
+                <div class="notification-list">
+                    <div class="notification-card" data-notification-id="1">
+                        <div class="card-body">
+                            <div class="notification-header">
+                                <span class="notification-label">Tâche 1 reportée le 30-07-2025</span>
+                                <span class="notification-date">25-07-2025</span>
+                            </div>
+                            <div class="notification-actions">
+                                <button type="button" class="btn btn-sm btn-primary mark-as-read-btn">Marquez comme lue</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="notification-card" data-notification-id="2">
+                        <div class="card-body">
+                            <div class="notification-header">
+                                <span class="notification-label">Nouvelle tâche dans l'activité "activité 1"</span>
+                                <span class="notification-date">25-07-2025</span>
+                            </div>
+                            <div class="notification-actions">
+                                <button type="button" class="btn btn-sm btn-primary mark-as-read-btn">Marquez comme lue</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    {# Ajoutez d'autres notifications ici si nécessaire #}
+                </div>
+            </div>
+        </div>
+
+        {% block page_content %}{% endblock %}
+    </main>
+
+    <!-- Bootstrap JS CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
+    {% block javascripts %}{% endblock %}
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.mark-as-read-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const card = this.closest('.notification-card');
+                    const notificationId = card.dataset.notificationId;
+
+                    // Désactiver le bouton et changer son texte
+                    this.disabled = true;
+                    this.textContent = 'Lu';
+                    this.classList.remove('btn-primary');
+                    this.classList.add('btn-success'); // Optionnel: changer la couleur pour indiquer "lu"
+
+                    // Marquer la carte comme lue visuellement
+                    card.classList.add('read');
+
+                    console.log(`Notification ${notificationId} marquée comme lue.`);
+                    // Ici, vous intégreriez votre logique pour envoyer la mise à jour au backend Symfony
+                    // pour marquer la notification comme lue dans la base de données.
+                });
+            });
+        });
+    </script>
+</body>
+</html>

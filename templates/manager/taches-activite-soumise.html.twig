@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Liste des tâches de l'activité{% endblock %}</title>
+
+    <!-- ✅ Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- ✅ Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+
+    <style>
+        body {
+            padding-left: 10%;
+            background-color: #F5F5F5;
+        }
+
+        @media (max-width: 800.98px) {
+            body {
+                padding-left: 0;
+            }
+            .sidebar-fixed-desktop {
+                display: none !important;
+            }
+        }
+
+        .card {
+            width: 100%;
+            border-radius: 12px;
+            border: 1px solid #e0e0e0;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        .table {
+            min-width: 600px;
+            border-collapse: collapse;
+            width: 100%;
+            margin-bottom: 0;
+            border: 1px solid #dee2e6;
+        }
+
+        .table th,
+        .table td {
+            border: 1px solid #dee2e6;
+            padding: 0.75rem;
+            vertical-align: middle;
+            text-align: left;
+        }
+
+        .table thead th {
+            background-color: #e9ecef;
+            font-weight: bold;
+            color: #343a40;
+        }
+
+        .table th.action-col,
+        .table td.action-col {
+            width: 1%;
+            white-space: nowrap;
+            text-align: center;
+        }
+
+        .btn-action {
+            font-size: 0.875rem;
+            padding: 0.375rem 0.75rem;
+            border-radius: 0.25rem;
+        }
+
+        .btn-modify {
+            background-color: #6c757d;
+            border-color: #6c757d;
+            color: white;
+        }
+
+        .btn-modify:hover {
+            background-color: #5c636a;
+            border-color: #5c636a;
+        }
+
+        .btn-delete {
+            background-color: #dc3545;
+            border-color: #dc3545;
+            color: white;
+        }
+
+        .btn-delete:hover {
+            background-color: #c82333;
+            border-color: #c82333;
+        }
+
+        .btn-validate {
+            background-color: #0d6efd;
+            border-color: #0d6efd;
+            color: white;
+        }
+
+        .btn-validate:hover {
+            background-color: #0b5ed7;
+            border-color: #0b5ed7;
+        }
+
+        .btn-action i {
+            font-size: 1.1rem;
+        }
+
+        @media (max-width: 576px) {
+            .btn-action i {
+                font-size: 1.25rem;
+            }
+
+            .btn-action {
+                padding: 0.5rem;
+            }
+        }
+    </style>
+
+    {% block stylesheets %}{% endblock %}
+</head>
+<body>
+    <!-- ✅ Sidebar inclus -->
+    <div class="sidebar-fixed-desktop">
+        {% include 'components/sidebar.html.twig' %}
+    </div>
+
+    <main class="container-fluid py-5">
+        <h1 class="mb-5 text-center">Liste des tâches de l'activité {{ activityId is defined ? activityId : '1' }}</h1>
+
+        <div class="row justify-content-center">
+            <div class="col-md-10 col-lg-8">
+                <div class="card h-100">
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Libellé</th>
+                                        <th>Date d'échéance</th>
+                                        <th>Priorité</th>
+                                        <th>Temps d'estimation</th>
+                                        <th class="action-col"></th>
+                                        <th class="action-col"></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr data-task-id="1">
+                                        <td>Préparer rapport mensuel</td>
+                                        <td>30/07/2025</td>
+                                        <td>Urgente</td>
+                                        <td>3</td>
+                                        <td class="action-col">
+                                            <button type="button" class="btn btn-sm btn-modify btn-action" title="Modifier">
+                                                <i class="bi bi-pencil-square"></i>
+                                            </button>
+                                        </td>
+                                        <td class="action-col">
+                                            <button type="button" class="btn btn-sm btn-delete btn-action" title="Supprimer">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr data-task-id="2">
+                                        <td>Appeler le fournisseur</td>
+                                        <td>05/08/2025</td>
+                                        <td>Normale</td>
+                                        <td>1</td>
+                                        <td class="action-col">
+                                            <button type="button" class="btn btn-sm btn-modify btn-action" title="Modifier">
+                                                <i class="bi bi-pencil-square"></i>
+                                            </button>
+                                        </td>
+                                        <td class="action-col">
+                                            <button type="button" class="btn btn-sm btn-delete btn-action" title="Supprimer">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    {# ➕ Ajoute plus de lignes ici #}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-5">
+            <div class="col-12 text-center">
+                <button type="button" class="btn btn-lg btn-validate">Valider</button>
+            </div>
+        </div>
+
+        {% block page_content %}{% endblock %}
+    </main>
+
+    <!-- ✅ Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    {% block javascripts %}{% endblock %}
+
+    <!-- ✅ JS interactions -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.btn-modify').forEach(button => {
+                button.addEventListener('click', function() {
+                    const taskId = this.closest('tr').dataset.taskId;
+                    console.log(`Modifier tâche ID: ${taskId}`);
+                });
+            });
+
+            document.querySelectorAll('.btn-delete').forEach(button => {
+                button.addEventListener('click', function() {
+                    const taskId = this.closest('tr').dataset.taskId;
+                    if (confirm(`Êtes-vous sûr de vouloir supprimer la tâche ID: ${taskId} ?`)) {
+                        console.log(`Supprimer tâche ID: ${taskId}`);
+                    }
+                });
+            });
+
+            document.querySelector('.btn-validate')?.addEventListener('click', function() {
+                console.log("Validation effectuée");
+            });
+        });
+    </script>
+</body>
+</html>

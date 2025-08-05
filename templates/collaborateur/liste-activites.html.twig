@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Liste des activités{% endblock %}</title>
+    <!-- Bootstrap CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
+    <!-- Bootstrap Icons CDN (IMPORTANT pour les icônes du sidebar) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <style>
+        /* Styles pour le corps et le padding pour le sidebar */
+        body {
+            padding-left: 280px; /* Largeur du sidebar */
+            background-color: #F5F5F5; /* Couleur de fond gris très doux pour le contenu principal */
+        }
+        /* Pour la responsivité sur mobile, vous pourriez vouloir cacher le sidebar fixe et utiliser un offcanvas */
+        @media (max-width: 767.98px) { /* Moins de 768px (taille md de Bootstrap) */
+            body {
+                padding-left: 0; /* Pas de padding sur mobile si le sidebar est un offcanvas */
+            }
+            .sidebar-fixed-desktop { /* Cache le sidebar fixe sur mobile */
+                display: none !important;
+            }
+        }
+
+        /* Styles pour les cartes du tableau de bord (réutilisés ici) */
+        .card {
+            border-radius: 12px; /* Bords plus arrondis */
+            border: 1px solid #e0e0e0; /* Bordure subtile */
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1); /* Ombre moderne et flottante */
+        }
+
+        /* Styles pour les en-têtes de tableau grisés */
+        .table-header-gray {
+            background-color: #e9ecef; /* Couleur grise claire de Bootstrap */
+            vertical-align: middle; /* Alignement vertical au milieu */
+        }
+
+        /* Centrer le contenu des cellules des boutons */
+        .table td.text-center-buttons {
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        /* Rendre les colonnes des boutons compactes */
+        .col-action-buttons {
+            width: 1%; /* Prend la largeur minimale nécessaire */
+            white-space: nowrap; /* Empêche le texte des boutons de passer à la ligne */
+            text-align: center; /* Centrer le contenu des en-têtes de ces colonnes */
+        }
+    </style>
+    {% block stylesheets %}{% endblock %}
+</head>
+<body>
+    {# Inclusion directe du Sidebar #}
+    <div class="sidebar-fixed-desktop">
+        {% include 'components/sidebar.html.twig' %}
+    </div>
+
+    <main class="container-fluid py-4">
+        <h1 class="mb-4 text-center">Liste des activités</h1>
+
+        <div class="row g-4">
+            {# Section du tableau des activités dans une carte #}
+            <div class="col-md-12">
+                <div class="card h-100">
+                    <div class="card-body p-0">
+                        <h5 class="card-title mb-3 px-4 pt-4 text-center">Détails des activités</h5>
+                        <div class="table-responsive">
+                            <table class="table table-hover table-bordered mb-0"> {# Ajout de table-bordered pour des bordures claires #}
+                                <thead>
+                                    <tr>
+                                        <th scope="col" class="table-header-gray">Activité</th>
+                                        <th scope="col" class="table-header-gray col-action-buttons"></th> {# Applique la classe pour la largeur compacte #}
+                                        <th scope="col" class="table-header-gray col-action-buttons"></th> {# Applique la classe pour la largeur compacte #}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {# Exemple d'activités. En production, ces données viendraient de votre backend. #}
+                                    <tr data-activity-id="1" data-activity-status="not_started">
+                                        <td class="align-middle">Préparer le rapport mensuel détaillé pour la direction et s'assurer de l'exactitude des chiffres.</td>
+                                        <td class="text-center-buttons">
+                                            <button type="button" class="btn btn-sm btn-success start-activity-btn">Commencer</button>
+                                        </td>
+                                        <td class="text-center-buttons">
+                                            <button type="button" class="btn btn-sm btn-danger end-activity-btn" disabled>Terminer</button>
+                                        </td>
+                                    </tr>
+                                    <tr data-activity-id="2" data-activity-status="not_started">
+                                        <td class="align-middle">Mettre à jour la base de données clients avec les nouvelles informations de contact et les préférences.</td>
+                                        <td class="text-center-buttons">
+                                            <button type="button" class="btn btn-sm btn-success start-activity-btn">Commencer</button>
+                                        </td>
+                                        <td class="text-center-buttons">
+                                            <button type="button" class="btn btn-sm btn-danger end-activity-btn" disabled>Terminer</button>
+                                        </td>
+                                    </tr>
+                                    <tr data-activity-id="3" data-activity-status="not_started">
+                                        <td class="align-middle">Organiser la réunion d'équipe hebdomadaire, préparer l'ordre du jour et envoyer les invitations.</td>
+                                        <td class="text-center-buttons">
+                                            <button type="button" class="btn btn-sm btn-success start-activity-btn">Commencer</button>
+                                        </td>
+                                        <td class="text-center-buttons">
+                                            <button type="button" class="btn btn-sm btn-danger end-activity-btn" disabled>Terminer</button>
+                                        </td>
+                                    </tr>
+                                    {# Ajoutez d'autres lignes de données ici si nécessaire #}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# Ce bloc peut être rempli par les templates qui étendent ce layout #}
+        {% block page_content %}{% endblock %}
+    </main>
+
+    <!-- Bootstrap JS CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
+    {% block javascripts %}{% endblock %}
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.start-activity-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const row = this.closest('tr');
+                    const endButton = row.querySelector('.end-activity-btn');
+
+                    this.disabled = true; // Désactiver le bouton "Commencer"
+                    endButton.disabled = false; // Activer le bouton "Terminer"
+                    row.dataset.activityStatus = 'in_progress'; // Mettre à jour le statut
+                    console.log(`Activité ${row.dataset.activityId} commencée.`);
+                });
+            });
+
+            document.querySelectorAll('.end-activity-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const row = this.closest('tr');
+                    const startButton = row.querySelector('.start-activity-btn');
+
+                    this.disabled = true; // Désactiver le bouton "Terminer"
+                    startButton.disabled = true; // Désactiver le bouton "Commencer"
+                    row.dataset.activityStatus = 'completed'; // Mettre à jour le statut
+                    console.log(`Activité ${row.dataset.activityId} terminée.`);
+                });
+            });
+        });
+    </script>
+</body>
+</html>

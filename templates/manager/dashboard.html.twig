@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Tableau de bord des activités{% endblock %}</title>
+    <!-- Bootstrap CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
+    <!-- Bootstrap Icons CDN (IMPORTANT pour les icônes du sidebar) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <!-- Chart.js CDN pour les diagrammes -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        /* Styles pour le corps et le padding pour le sidebar */
+        body {
+            padding-left: 280px; /* Largeur du sidebar */
+            background-color: #F5F5F5; /* Nouvelle couleur de fond gris très doux pour le contenu principal */
+        }
+        /* Pour la responsivité sur mobile, vous pourriez vouloir cacher le sidebar fixe et utiliser un offcanvas */
+        @media (max-width: 767.98px) { /* Moins de 768px (taille md de Bootstrap) */
+            body {
+                padding-left: 0; /* Pas de padding sur mobile si le sidebar est un offcanvas */
+            }
+            .sidebar-fixed-desktop { /* Cache le sidebar fixe sur mobile */
+                display: none !important;
+            }
+        }
+
+        /* Styles pour les cartes du tableau de bord */
+        .card {
+            border-radius: 12px; /* Bords plus arrondis */
+            border: 1px solid #e0e0e0; /* Bordure subtile */
+            /* Ombre plus prononcée mais toujours douce pour un effet "très moderne" et flottant */
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1); /* Augmentation du flou et de l'opacité */
+        }
+
+        /* Styles pour simuler le graphique en camembert */
+        .pie-chart-container {
+            position: relative;
+            width: 200px; /* Taille du graphique */
+            height: 200px;
+            border-radius: 50%;
+            background: conic-gradient(
+                #0d6efd 0% 25%, /* Bleu pour 'en cours' (25%) */
+                #dc3545 25% 35%, /* Rouge pour 'à faire' (10%) */
+                #198754 35% 100% /* Vert pour 'terminé' (65%) */
+            );
+            margin: 0 auto; /* Centrer le graphique */
+        }
+
+        .pie-chart-legend {
+            list-style: none;
+            padding: 0;
+            margin-top: 1rem;
+        }
+        .pie-chart-legend li {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        .pie-chart-legend .color-box {
+            width: 15px;
+            height: 15px;
+            margin-right: 0.5rem;
+            border-radius: 3px;
+        }
+        .color-box.blue { background-color: #0d6efd; }
+        .color-box.red { background-color: #dc3545; }
+        .color-box.green { background-color: #198754; }
+
+        /* Styles pour la ligne verticale dans "Temps passé" */
+        .vertical-divider {
+            border-left: 1px solid #dee2e6; /* Couleur de bordure Bootstrap */
+            height: 60px; /* Hauteur de la ligne */
+            margin: 0 1.5rem;
+        }
+
+        /* Styles pour la section "Tâche à effectuer par Activité" */
+        .activity-tasks-list .activity-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        .activity-tasks-list .activity-name {
+            flex-basis: 120px; /* Largeur fixe pour le nom de l'activité */
+            flex-shrink: 0;
+            font-weight: 500;
+            color: #343a40;
+        }
+        .activity-tasks-list .bar-wrapper {
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem; /* Espacement entre la barre et le texte */
+            background-color: transparent; /* S'assure qu'il n'y a pas de fond gris */
+            height: 15px; /* Hauteur de la barre */
+        }
+        .activity-tasks-list .activity-bar {
+            height: 100%; /* Prend toute la hauteur du wrapper */
+            background-color: #0d6efd; /* Couleur de la barre de progression */
+            border-radius: 0.25rem; /* Bords légèrement arrondis */
+            min-width: 10px; /* Pour que la barre soit visible même pour de petites valeurs */
+        }
+        .activity-tasks-list .task-count {
+            font-weight: 600;
+            color: #343a40;
+            min-width: 80px; /* Largeur minimale pour le texte "X tâches" */
+            text-align: right;
+        }
+    </style>
+    {% block stylesheets %}{% endblock %}
+</head>
+<body>
+    {# Inclusion du Sidebar - Le fichier templates/components/sidebar.html.twig doit exister #}
+    <div class="sidebar-fixed-desktop">
+        {% include 'components/sidebar.html.twig' %}
+    </div>
+
+    <main class="container-fluid py-4">
+        <h1 class="mb-4 text-center">Tableau de bord des activités</h1>
+
+        <div class="row g-4 mb-4"> {# Première ligne pour les deux premiers éléments #}
+            {# Section Tâches #}
+            <div class="col-md-6"> {# Prend la moitié de la largeur sur les écrans moyens et plus #}
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <h5 class="card-title mb-4">Tâches</h5>
+                        <div class="pie-chart-container mb-4"></div>
+                        <ul class="pie-chart-legend">
+                            <li><span class="color-box blue"></span> En cours</li>
+                            <li><span class="color-box red"></span> À faire</li>
+                            <li><span class="color-box green"></span> Terminé</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            {# Section Temps passé #}
+            <div class="col-md-6"> {# Prend l'autre moitié de la largeur #}
+                <div class="card h-100">
+                    <div class="card-body d-flex flex-column justify-content-center align-items-center">
+                        <h5 class="card-title mb-4">Temps passé</h5>
+                        <div class="d-flex align-items-center">
+                            <div class="text-center me-4">
+                                <p class="mb-0 text-secondary fw-semibold">Jour</p>
+                                <h3 class="fw-bold">48</h3>
+                            </div>
+                            <div class="vertical-divider"></div>
+                            <div class="text-center ms-4">
+                                <p class="mb-0 text-secondary fw-semibold">Semaine</p>
+                                <h3 class="fw-bold">54h</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4"> {# Deuxième ligne pour le dernier élément #}
+            {# Section Tâche à effectuer par Activité (avec barres simples et dynamiques) #}
+            <div class="col-md-12"> {# Prend toute la largeur sur les écrans moyens et plus #}
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title mb-4 text-center">Tâche à effectuer par Activité</h5>
+                        <div class="activity-tasks-list">
+                            {# Simulez des données d'activités. En production, ces données viendraient de votre contrôleur Symfony. #}
+                            {% set activities = [
+                                { 'name': 'Activité 1', 'taskCount': 8 },
+                                { 'name': 'Activité 2', 'taskCount': 5 },
+                                { 'name': 'Activité 3', 'taskCount': 10 },
+                                { 'name': 'Activité 4', 'taskCount': 5 } 
+                            ] %}
+
+                            {# Calcul dynamique de la valeur maximale des tâches #}
+                            {% set maxTasks = 0 %}
+                            {% for activity in activities %}
+                                {% if activity.taskCount > maxTasks %}
+                                    {% set maxTasks = activity.taskCount %}
+                                {% endif %}
+                            {% endfor %}
+                            {# Assurez-vous que maxTasks n'est pas zéro pour éviter la division par zéro #}
+                            {% if maxTasks == 0 %}
+                                {% set maxTasks = 1 %}
+                            {% endif %}
+
+                            {% for activity in activities %}
+                                {% set barWidth = (activity.taskCount / maxTasks * 100) | round %}
+                                <div class="activity-item">
+                                    <span class="activity-name">{{ activity.name }}</span>
+                                    <div class="bar-wrapper">
+                                        <div class="activity-bar" style="width: {{ barWidth }}%;"></div>
+                                    </div>
+                                    <span class="task-count">{{ activity.taskCount }} tâches</span>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Bootstrap JS CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
+    {% block javascripts %}{% endblock %}
+</body>
+</html>

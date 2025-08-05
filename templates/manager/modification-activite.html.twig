@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Modification Activité{% endblock %}</title>
+    <!-- Bootstrap CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
+    <!-- Bootstrap Icons CDN (IMPORTANT pour les icônes du sidebar) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <style>
+        /* Styles pour le corps et le padding pour le sidebar */
+        body {
+            padding-left: 280px; /* Largeur du sidebar */
+            background-color: #F5F5F5; /* Couleur de fond gris très doux pour le contenu principal */
+        }
+        /* Pour la responsivité sur mobile, vous pourriez vouloir cacher le sidebar fixe et utiliser un offcanvas */
+        @media (max-width: 767.98px) { /* Moins de 768px (taille md de Bootstrap) */
+            body {
+                padding-left: 0; /* Pas de padding sur mobile si le sidebar est un offcanvas */
+            }
+            .sidebar-fixed-desktop { /* Cache le sidebar fixe sur mobile */
+                display: none !important;
+            }
+        }
+
+        /* Styles pour les cartes */
+        .card {
+            border-radius: 12px; /* Bords plus arrondis */
+            border: 1px solid #e0e0e0; /* Bordure subtile */
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08); /* Ombre plus douce et moderne */
+        }
+
+        /* Styles pour les labels de formulaire */
+        .form-label {
+            font-weight: 500; /* Rendre les labels un peu plus gras */
+            color: #343a40; /* Couleur de texte foncée */
+            margin-bottom: 0.5rem; /* Espacement sous le label */
+        }
+
+        /* Styles pour les inputs */
+        .form-control, .form-select {
+            border-radius: 8px; /* Bords arrondis pour les inputs */
+            border: 1px solid #ced4da; /* Bordure standard */
+            padding: 0.75rem 1rem; /* Padding confortable */
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.05); /* Ombre interne subtile */
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: #80bdff; /* Couleur de focus Bootstrap */
+            box-shadow: 0 0 0 0.25rem rgba(13,110,253,.25); /* Ombre de focus Bootstrap */
+        }
+
+        /* Styles pour les boutons */
+        .btn-primary {
+            background-color: #0d6efd; /* Bleu primaire */
+            border-color: #0d6efd;
+        }
+        .btn-primary:hover {
+            background-color: #0b5ed7;
+            border-color: #0b5ed7;
+        }
+        .btn-secondary {
+            background-color: #6c757d; /* Gris secondaire */
+            border-color: #6c757d;
+        }
+        .btn-secondary:hover {
+            background-color: #5c636a;
+            border-color: #5c636a;
+        }
+    </style>
+    {% block stylesheets %}{% endblock %}
+</head>
+<body>
+    {# Inclusion directe du Sidebar #}
+    <div class="sidebar-fixed-desktop">
+        {% include 'components/sidebar.html.twig' %}
+    </div>
+
+    <main class="container-fluid py-5">
+        <h1 class="mb-5 text-center">Modification Activité</h1>
+
+        <div class="row justify-content-center">
+            {# Augmentation de la largeur de la colonne pour la carte #}
+            <div class="col-md-8 col-lg-6"> {# Prend 66% sur md, 50% sur lg #}
+                <div class="card p-4"> {# Utilisation d'une carte pour encadrer le formulaire #}
+                    <div class="card-body">
+                        <form>
+                            <div class="mb-4">
+                                <label for="activityName" class="form-label">Activité</label>
+                                <input type="text" class="form-control" id="activityName" value="activite 1">
+                            </div>
+                            <div class="mb-4">
+                                <label for="dueDate" class="form-label">Date d'échéance</label>
+                                <input type="date" class="form-control" id="dueDate" value="2025-08-08">
+                            </div>
+                            <div class="mb-4">
+                                <label for="priority" class="form-label">Priorité</label>
+                                <select class="form-select" id="priority">
+                                    <option value="urgent" selected>urgent</option>
+                                    <option value="moyenne">moyenne</option>
+                                    <option value="faible">faible</option>
+                                </select>
+                            </div>
+
+                            <div class="text-center mt-5">
+                                <button type="submit" class="btn btn-primary btn-lg mb-3">Enregistrer la modification</button>
+                                <button type="button" class="btn btn-secondary btn-lg" id="modifyTasksBtn">Modifier les taches</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% block page_content %}{% endblock %}
+    </main>
+
+    <!-- Bootstrap JS CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
+    {% block javascripts %}{% endblock %}
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelector('form').addEventListener('submit', function(event) {
+                event.preventDefault(); // Empêche la soumission par défaut du formulaire
+
+                const activityName = document.getElementById('activityName').value;
+                const dueDate = document.getElementById('dueDate').value;
+                const priority = document.getElementById('priority').value;
+
+                console.log('Modification d\'activité déclenchée :');
+                console.log('Nom de l\'activité:', activityName);
+                console.log('Date d\'échéance:', dueDate);
+                console.log('Priorité:', priority);
+
+                // Ici, vous intégreriez votre logique pour envoyer ces données au backend Symfony
+                // pour mettre à jour l'activité.
+            });
+
+            document.getElementById('modifyTasksBtn').addEventListener('click', function() {
+                console.log("Bouton 'Modifier les taches' cliqué.");
+                // Ici, vous intégreriez votre logique pour rediriger vers une page
+                // de modification des tâches associées à cette activité.
+                // Exemple: window.location.href = `/activities/${activityId}/tasks/edit`;
+            });
+        });
+    </script>
+</body>
+</html>

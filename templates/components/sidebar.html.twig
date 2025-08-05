@@ -1,0 +1,108 @@
+{# Bouton hamburger, en dehors du sidebar, en haut à gauche et toujours visible #}
+<button id="toggleSidebarBtn" 
+        type="button" 
+        aria-label="Toggle sidebar"
+        style="
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            z-index: 3000; /* Très au-dessus */
+            width: 45px;
+            height: 45px;
+            border-radius: 6px;
+            background-color: #0d6efd;
+            border: none;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        ">
+    <i class="bi bi-list" style="font-size: 1.5rem;"></i>
+</button>
+
+<nav id="sidebarMenu" 
+     class="sidebar d-flex flex-column flex-shrink-0 p-3 vh-100 position-fixed shadow-sm" 
+     style="width: 280px; top: 0; left: 0; z-index: 1500; border-right: 1px solid #dee2e6; background: linear-gradient(to bottom, #ffffffdc, #c8dbebff);">
+
+    {# Ton contenu sidebar ici... #}
+    <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-dark text-decoration-none">
+        <span class="fs-4">Gestion Activités</span>
+    </a>
+
+    <hr class="text-secondary">
+
+    <ul class="nav nav-pills flex-column mb-auto">
+        <li class="nav-item">
+            <a href="/" class="nav-link text-white active" aria-current="page" style="background-color: #3d85d8ff;">
+                <i class="bi bi-house-door me-2"></i> Tableau de bord
+            </a>
+        </li>
+        <li><a href="/" class="nav-link text-dark"><i class="bi bi-list-task me-2"></i> Mes Activités</a></li>
+        <li><a href="/" class="nav-link text-dark"><i class="bi bi-folder me-2"></i> Projets</a></li>
+        <li><a href="/" class="nav-link text-dark"><i class="bi bi-people me-2"></i> Utilisateurs</a></li>
+        <li><a href="/" class="nav-link text-dark"><i class="bi bi-graph-up me-2"></i> Rapports</a></li>
+    </ul>
+
+    <hr class="text-secondary">
+
+    <div class="dropdown">
+        <a href="#" class="d-flex align-items-center text-dark text-decoration-none dropdown-toggle" id="dropdownUser1" data-bs-toggle="dropdown" aria-expanded="false">
+            <img src="/placeholder.svg?height=32&width=32" alt="avatar" width="32" height="32" class="rounded-circle me-2">
+            <strong>Nom Utilisateur</strong>
+        </a>
+        <ul class="dropdown-menu dropdown-menu-light text-small shadow" aria-labelledby="dropdownUser1">
+            <li><a class="dropdown-item" href="/">Paramètres</a></li>
+            <li><a class="dropdown-item" href="/">Profil</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item" href="/">Déconnexion</a></li>
+        </ul>
+    </div>
+</nav>
+
+<style>
+    /* Cacher sidebar sur petit écran */
+    @media (max-width: 767.98px) {
+        #sidebarMenu {
+            display: none !important;
+        }
+        #sidebarMenu.active {
+            display: flex !important;
+            position: fixed;
+            top: 0; left: 0;
+            width: 280px;
+            height: 100vh;
+            background: linear-gradient(to bottom, #ffffffdc, #c8dbebff);
+            box-shadow: 2px 0 10px rgba(0,0,0,0.15);
+            z-index: 2500;
+            flex-direction: column;
+        }
+    }
+
+    /* Sidebar toujours visible sur grand écran */
+    @media (min-width: 768px) {
+        #sidebarMenu {
+            display: flex !important;
+        }
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const sidebar = document.getElementById('sidebarMenu');
+        const toggleBtn = document.getElementById('toggleSidebarBtn');
+
+        toggleBtn.addEventListener('click', function () {
+            if (window.innerWidth < 768) {
+                sidebar.classList.toggle('active');
+            }
+        });
+
+        window.addEventListener('resize', function () {
+            if (window.innerWidth >= 768) {
+                sidebar.classList.remove('active');
+                sidebar.style.display = 'flex';
+            }
+        });
+    });
+</script>

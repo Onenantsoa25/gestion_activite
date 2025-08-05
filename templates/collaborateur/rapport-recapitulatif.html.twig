@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Rapport et récapitulatif d'activité{% endblock %}</title>
+    <!-- Bootstrap CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
+    <!-- Bootstrap Icons CDN (IMPORTANT pour les icônes du sidebar) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <style>
+        /* Styles pour le corps et le padding pour le sidebar */
+        body {
+            padding-left: 280px; /* Largeur du sidebar */
+            background-color: #F5F5F5; /* Couleur de fond gris très doux pour le contenu principal */
+        }
+        /* Pour la responsivité sur mobile, vous pourriez vouloir cacher le sidebar fixe et utiliser un offcanvas */
+        @media (max-width: 767.98px) { /* Moins de 768px (taille md de Bootstrap) */
+            body {
+                padding-left: 0; /* Pas de padding sur mobile si le sidebar est un offcanvas */
+            }
+            .sidebar-fixed-desktop { /* Cache le sidebar fixe sur mobile */
+                display: none !important;
+            }
+        }
+
+        /* Styles pour les cartes du tableau de bord */
+        .card {
+            border-radius: 12px; /* Bords plus arrondis */
+            border: 1px solid #e0e0e0; /* Bordure subtile */
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08); /* Ombre plus douce et moderne */
+        }
+
+        /* Styles pour les en-têtes de tableau grisés */
+        .table-header-gray {
+            background-color: #e9ecef; /* Couleur grise claire de Bootstrap pour les en-têtes */
+            vertical-align: middle; /* Alignement vertical au milieu */
+            font-weight: 600; /* Un peu plus gras pour les en-têtes */
+        }
+
+        /* Styles pour le tableau avec bordures minimalistes et alignements */
+        .table {
+            border-collapse: collapse; /* Fusionne les bordures des cellules */
+            margin-bottom: 0; /* Supprime la marge par défaut du tableau */
+        }
+        .table th,
+        .table td {
+            border: 1px solid #f0f0f0; /* Bordure très légère pour les cellules */
+            padding: 0.5rem 1rem; /* Padding réduit pour une hauteur de ligne plus petite */
+            vertical-align: middle; /* Alignement vertical par défaut */
+        }
+        /* Supprime la bordure supérieure de la première ligne du corps pour éviter les doubles bordures avec l'en-tête */
+        .table tbody tr:first-child td {
+            border-top: none;
+        }
+
+        /* Alignement spécifique pour la colonne Durée */
+        .table .col-duree {
+            text-align: right; /* Aligner les chiffres à droite */
+            width: 80px; /* Largeur fixe pour la colonne durée */
+            white-space: nowrap; /* Empêche le texte de passer à la ligne */
+        }
+
+        /* Styles pour les lignes de total */
+        .table-total-row {
+            font-weight: bold;
+            background-color: #e9ecef; /* Même couleur que les en-têtes pour les totaux */
+            border-top: 2px solid #dee2e6; /* Bordure supérieure plus prononcée pour séparer les totaux */
+        }
+        .table-total-row td {
+            text-align: right; /* Aligner les totaux à droite */
+            padding-top: 1rem; /* Plus d'espace au-dessus des totaux */
+            padding-bottom: 1rem; /* Plus d'espace en dessous des totaux */
+        }
+        .table-total-row td:first-child {
+            text-align: left; /* Le texte "total" ou "Total semaine" reste à gauche */
+        }
+
+        /* Ajustements pour la responsivité des filtres sur petits écrans */
+        @media (max-width: 767.98px) {
+            .filter-row-responsive {
+                flex-direction: column; /* Empile les éléments verticalement */
+                align-items: stretch !important; /* Étire les éléments pour prendre toute la largeur */
+            }
+            .filter-row-responsive > .col-auto {
+                margin-bottom: 1rem; /* Ajoute un espacement vertical */
+                width: 100%; /* Assure que les éléments prennent toute la largeur disponible */
+            }
+            .filter-row-responsive > .col-auto:last-child {
+                margin-bottom: 0; /* Pas de marge en bas pour le dernier élément */
+            }
+            .filter-row-responsive > .ms-auto {
+                margin-left: 0 !important; /* Supprime la marge auto sur petits écrans */
+            }
+        }
+    </style>
+    {% block stylesheets %}{% endblock %}
+</head>
+<body>
+    {# Inclusion directe du Sidebar #}
+    <div class="sidebar-fixed-desktop">
+        {% include 'components/sidebar.html.twig' %}
+    </div>
+
+    <main class="container-fluid py-5"> {# Augmentation du padding vertical pour la page #}
+        <h1 class="mb-5 text-center">Rapport et récapitulatif d'activité</h1> {# Marge plus grande sous le titre #}
+
+        {# Section des filtres #}
+        <div class="row g-3 mb-5 align-items-center justify-content-center filter-row-responsive"> {# g-3 pour un espacement plus compact, justify-content-center pour centrer #}
+            <div class="col-auto">
+                <label for="startDate" class="visually-hidden">Date de début</label>
+                <input type="date" class="form-control shadow-sm" id="startDate">
+            </div>
+            <div class="col-auto d-flex align-items-center">
+                <span class="text-muted">à</span>
+            </div>
+            <div class="col-auto">
+                <label for="endDate" class="visually-hidden">Date de fin</label>
+                <input type="date" class="form-control shadow-sm" id="endDate">
+            </div>
+            <div class="col-auto">
+                <label for="activityType" class="visually-hidden">Type d'activité</label>
+                <select class="form-select shadow-sm" id="activityType" aria-label="Type d'activité">
+                    <option selected>Type d'activité</option>
+                    <option value="1">Activité A</option>
+                    <option value="2">Activité B</option>
+                    <option value="3">Activité C</option>
+                </select>
+            </div>
+            <div class="col-auto"> {# Plus besoin de ms-auto si on centre le row #}
+                <button type="button" class="btn btn-primary" id="filterButton">Filtrer</button>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            {# Section du tableau des rapports dans une carte #}
+            <div class="col-md-12">
+                <div class="card h-100">
+                    <div class="card-body p-0">
+                        <h5 class="card-title mb-3 px-4 pt-4 text-center">Détails du rapport</h5>
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead>
+                                    <tr>
+                                        <th scope="col" class="table-header-gray">Date</th>
+                                        <th scope="col" class="table-header-gray">Activité</th>
+                                        <th scope="col" class="table-header-gray col-duree">Durée</th>
+                                        <th scope="col" class="table-header-gray">Commentaire</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {# Groupe du 24-07-2025 #}
+                                    <tr>
+                                        <td class="align-middle">24-07-2025</td>
+                                        <td class="align-middle">Activité 1</td>
+                                        <td class="align-middle col-duree">2</td>
+                                        <td class="align-middle">Commentaire 1</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="align-middle"></td> {# Cellule vide pour la date #}
+                                        <td class="align-middle">Activité 2</td>
+                                        <td class="align-middle col-duree">1</td>
+                                        <td class="align-middle">Commentaire 2</td>
+                                    </tr>
+                                    <tr class="table-total-row">
+                                        <td colspan="2" class="text-end">total</td>
+                                        <td class="align-middle">3</td>
+                                        <td class="align-middle"></td> {# Cellule vide pour le commentaire #}
+                                    </tr>
+
+                                    {# Groupe du 25-07-2025 #}
+                                    <tr>
+                                        <td class="align-middle">25-07-2025</td>
+                                        <td class="align-middle">Activité 1</td>
+                                        <td class="align-middle col-duree">4</td>
+                                        <td class="align-middle">Commentaire 3</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="align-middle"></td> {# Cellule vide pour la date #}
+                                        <td class="align-middle">Activité 3</td>
+                                        <td class="align-middle col-duree">1</td>
+                                        <td class="align-middle">Commentaire 4</td>
+                                    </tr>
+                                    <tr class="table-total-row">
+                                        <td colspan="2" class="text-end">total</td>
+                                        <td class="align-middle">5</td>
+                                        <td class="align-middle"></td> {# Cellule vide pour le commentaire #}
+                                    </tr>
+
+                                    {# Total semaine #}
+                                    <tr class="table-total-row">
+                                        <td colspan="2" class="text-end">Total semaine</td>
+                                        <td class="align-middle">9</td>
+                                        <td class="align-middle"></td> {# Cellule vide pour le commentaire #}
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-5"> {# Marge plus grande au-dessus du bouton Exporter #}
+            <div class="col-12 text-center">
+                <button type="button" class="btn btn-secondary" id="exportButton">Exporter</button>
+            </div>
+        </div>
+
+        {% block page_content %}{% endblock %}
+    </main>
+
+    <!-- Bootstrap JS CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
+    {% block javascripts %}{% endblock %}
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const filterButton = document.getElementById('filterButton');
+            const exportButton = document.getElementById('exportButton');
+
+            filterButton.addEventListener('click', function() {
+                const startDate = document.getElementById('startDate').value;
+                const endDate = document.getElementById('endDate').value;
+                const activityType = document.getElementById('activityType').value;
+
+                console.log('Filtrage déclenché avec les valeurs :');
+                console.log('Date de début:', startDate);
+                console.log('Date de fin:', endDate);
+                console.log('Type d\'activité:', activityType);
+
+                // Ici, vous intégrerez votre logique de filtrage réelle.
+                // Par exemple, une requête Fetch API vers votre backend Symfony
+                // pour récupérer les données filtrées et mettre à jour le tableau.
+            });
+
+            exportButton.addEventListener('click', function() {
+                console.log('Bouton Exporter cliqué.');
+                // Ici, vous intégrerez votre logique d'exportation.
+                // Par exemple, générer un fichier CSV ou PDF à partir des données du tableau.
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,5 +1,5 @@
 <?php
-namespace App\Repository;
+namespace App\Repository\test;
 
 use App\Entity\Util;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;

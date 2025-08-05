@@ -1,8 +1,8 @@
 <?php
-namespace App\Service;
+namespace App\Service\test;
 
-use App\Repository\UtilRepository;
-use App\Entity\Util;
+use App\Repository\test\UtilRepository;
+use App\Entity\test\Util;
 
 class UtilService
 {

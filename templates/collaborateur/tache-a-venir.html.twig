@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Tâche à venir ou en retard{% endblock %}</title>
+    <!-- Bootstrap CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
+    <!-- Bootstrap Icons CDN (IMPORTANT pour les icônes du sidebar) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <style>
+        /* Styles pour le corps et le padding pour le sidebar */
+        body {
+            padding-left: 280px; /* Largeur du sidebar */
+            background-color: #F5F5F5; /* Couleur de fond gris très doux pour le contenu principal */
+        }
+        /* Pour la responsivité sur mobile, vous pourriez vouloir cacher le sidebar fixe et utiliser un offcanvas */
+        @media (max-width: 767.98px) { /* Moins de 768px (taille md de Bootstrap) */
+            body {
+                padding-left: 0; /* Pas de padding sur mobile si le sidebar est un offcanvas */
+            }
+            .sidebar-fixed-desktop { /* Cache le sidebar fixe sur mobile */
+                display: none !important;
+            }
+        }
+
+        /* Styles pour les cartes (si utilisées pour le tableau) */
+        .card {
+            border-radius: 12px; /* Bords plus arrondis */
+            border: 1px solid #e0e0e0; /* Bordure subtile */
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08); /* Ombre plus douce et moderne */
+        }
+
+        /* Styles pour les en-têtes de tableau grisés */
+        .table-header-gray {
+            background-color: #e9ecef; /* Couleur grise claire de Bootstrap pour les en-têtes */
+            vertical-align: middle; /* Alignement vertical au milieu */
+            font-weight: 600; /* Un peu plus gras pour les en-têtes */
+            padding: 1rem 1.25rem; /* Padding augmenté pour les en-têtes */
+        }
+
+        /* Styles pour le tableau avec bordures minimalistes et alignements */
+        .table {
+            border-collapse: separate; /* Permet d'avoir des border-spacing */
+            border-spacing: 0; /* Supprime l'espacement par défaut */
+            margin-bottom: 0; /* Supprime la marge par défaut du tableau */
+            border-radius: 12px; /* Applique le border-radius au tableau entier */
+            overflow: hidden; /* Cache les coins des bordures internes */
+        }
+        .table th,
+        .table td {
+            border: 1px solid #f0f0f0; /* Bordure très légère pour les cellules */
+            padding: 1rem 1.25rem; /* Padding augmenté pour plus d'aération */
+            vertical-align: middle; /* Alignement vertical par défaut */
+        }
+        /* Styles pour les coins arrondis du tableau */
+        .table thead th:first-child {
+            border-top-left-radius: 12px;
+        }
+        .table thead th:last-child {
+            border-top-right-radius: 12px;
+        }
+        .table tbody tr:last-child td:first-child {
+            border-bottom-left-radius: 12px;
+        }
+        .table tbody tr:last-child td:last-child {
+            border-bottom-right-radius: 12px;
+        }
+
+        /* Centrer le contenu des cellules des boutons */
+        .table td.text-center-buttons {
+            text-align: center;
+            vertical-align: middle;
+            width: 1%; /* Rendre la colonne du bouton compacte */
+            white-space: nowrap; /* Empêche le texte du bouton de passer à la ligne */
+        }
+    </style>
+    {% block stylesheets %}{% endblock %}
+</head>
+<body>
+    {# Inclusion directe du Sidebar #}
+    <div class="sidebar-fixed-desktop">
+        {% include 'components/sidebar.html.twig' %}
+    </div>
+
+    <main class="container-fluid py-5">
+        <h1 class="mb-5 text-center">Tâche à venir ou en retard</h1>
+
+        <div class="row justify-content-center">
+            {# Augmentation de la largeur de la colonne pour la carte du tableau #}
+            <div class="col-md-11 col-lg-10"> {# Prend plus de largeur sur les écrans moyens et grands #}
+                <div class="card h-100">
+                    <div class="card-body p-0">
+                        <h5 class="card-title mb-3 px-4 pt-4 text-center">Détails des tâches</h5>
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead>
+                                    <tr>
+                                        <th scope="col" class="table-header-gray">Tâche</th>
+                                        <th scope="col" class="table-header-gray">Activité</th>
+                                        <th scope="col" class="table-header-gray">Date prévue</th>
+                                        <th scope="col" class="table-header-gray">État</th>
+                                        <th scope="col" class="table-header-gray">Priorité</th>
+                                        <th scope="col" class="table-header-gray"></th> {# Colonne vide pour le bouton #}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="align-middle">tache 1</td>
+                                        <td class="align-middle">activite 1</td>
+                                        <td class="align-middle">23-07-2025</td>
+                                        <td class="align-middle">non termine</td>
+                                        <td class="align-middle">urgent</td>
+                                        <td class="text-center-buttons">
+                                            <button type="button" class="btn btn-sm btn-primary replanifier-btn">Replanifier</button> {# Changement de couleur pour le bouton #}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="align-middle">tache 2</td>
+                                        <td class="align-middle">activite 1</td>
+                                        <td class="align-middle">22-07-2025</td>
+                                        <td class="align-middle">reportee</td>
+                                        <td class="align-middle">moyenne</td>
+                                        <td class="text-center-buttons">
+                                            <button type="button" class="btn btn-sm btn-primary replanifier-btn">Replanifier</button> {# Changement de couleur pour le bouton #}
+                                        </td>
+                                    </tr>
+                                    {# Ajoutez d'autres lignes de données ici si nécessaire #}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-5"> {# Marge supérieure pour séparer du tableau #}
+            <div class="col-12 text-center">
+                <button type="button" class="btn btn-primary btn-lg">Créer une tâche</button>
+            </div>
+        </div>
+
+        {% block page_content %}{% endblock %}
+    </main>
+
+    <!-- Bootstrap JS CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
+    {% block javascripts %}{% endblock %}
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.replanifier-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const row = this.closest('tr');
+                    const taskName = row.querySelector('td:first-child').textContent;
+                    console.log(`Bouton 'Replanifier' cliqué pour la tâche: ${taskName}`);
+                    // Ici, vous intégreriez votre logique pour ouvrir un modal de replanification
+                    // ou rediriger vers une page de modification de tâche.
+                });
+            });
+
+            document.querySelector('.btn-lg').addEventListener('click', function() {
+                console.log("Bouton 'Créer une tâche' cliqué.");
+                // Ici, vous intégreriez votre logique pour rediriger vers la page de création de tâche.
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,7 +1,8 @@
 <?php
 namespace App\Repository\test;
 
-use App\Entity\Util;
+use App\Entity\test\Util;
+// use App\Entity\Util;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 

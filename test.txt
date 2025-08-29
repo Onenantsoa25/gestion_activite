@@ -1,0 +1,8 @@
+
+le manager attribue les taches au collaborateur
+le collaborateur planifie la date ou il commence la tache
+le collaborateur termine la tache en saisissant le temps passee, en ajoutant un justificatif et mettre du commenataire
+le manager recoit de notification pour le tache terminee et verifie le livrable et puis la
+
+
+;

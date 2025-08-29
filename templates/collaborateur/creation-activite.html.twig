@@ -20,7 +20,7 @@
                 padding-left: 0; /* Pas de padding sur mobile si le sidebar est un offcanvas */
             }
             .sidebar-fixed-desktop { /* Cache le sidebar fixe sur mobile */
-                display: none !important;
+                /* display: none !important; */
             }
         }
 
@@ -55,7 +55,7 @@
 <body>
     {# Inclusion directe du Sidebar #}
     <div class="sidebar-fixed-desktop">
-        {% include 'components/sidebar.html.twig' %}
+        {% include 'components/sidebar.html.twig' with {'active' : 'activite'} %}
     </div>
 
     <main class="container-fluid py-5">
@@ -66,18 +66,27 @@
             <div class="col-md-8 col-lg-6"> {# Prend 66% sur md, 50% sur lg #}
                 <div class="card p-4"> {# Utilisation d'une carte pour encadrer le formulaire #}
                     <div class="card-body">
-                        <form>
+                        <form action="/collaborateur/activite" method="POST" >
                             <div class="mb-4">
                                 <label for="activityName" class="form-label">Activité</label>
-                                <input type="text" class="form-control" id="activityName" placeholder="Nom de l'activité">
+                                <input type="text" class="form-control" id="activityName" placeholder="Nom de l'activité" name="nom">
+                            </div>
+                            <div class="mb-4">
+                                <label for="activityType" class="form-label">Type d'activité</label>
+                                <select class="form-select" id="activityType" name="type">
+                                <option value="" disabled selected>Choisir un type</option>
+                                {% for type in types %}
+                                    <option value="{{type.id}}">{{type.typeActivite}}</option>
+                                {% endfor %}
+                                </select>
                             </div>
                             <div class="mb-4">
                                 <label for="dueDate" class="form-label">Date d'échéance</label>
-                                <input type="date" class="form-control" id="dueDate">
+                                <input type="date" class="form-control" id="dueDate" name="date">
                             </div>
 
                             <div class="text-center mt-5">
-                                <button type="submit" class="btn btn-primary btn-lg">Créer</button>
+                                <input type="submit" class="btn btn-primary btn-lg" value="Créer">
                             </div>
                         </form>
                     </div>
@@ -93,21 +102,21 @@
     {% block javascripts %}{% endblock %}
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            document.querySelector('form').addEventListener('submit', function(event) {
-                event.preventDefault(); // Empêche la soumission par défaut du formulaire
+        // document.addEventListener('DOMContentLoaded', function() {
+        //     document.querySelector('form').addEventListener('submit', function(event) {
+        //         event.preventDefault(); // Empêche la soumission par défaut du formulaire
 
-                const activityName = document.getElementById('activityName').value;
-                const dueDate = document.getElementById('dueDate').value;
+        //         const activityName = document.getElementById('activityName').value;
+        //         const dueDate = document.getElementById('dueDate').value;
 
-                console.log('Création d\'activité déclenchée :');
-                console.log('Nom de l\'activité:', activityName);
-                console.log('Date d\'échéance:', dueDate);
+        //         console.log('Création d\'activité déclenchée :');
+        //         console.log('Nom de l\'activité:', activityName);
+        //         console.log('Date d\'échéance:', dueDate);
 
-                // Ici, vous intégreriez votre logique pour envoyer ces données au backend Symfony
-                // pour créer une nouvelle activité.
-            });
-        });
+        //         // Ici, vous intégreriez votre logique pour envoyer ces données au backend Symfony
+        //         // pour créer une nouvelle activité.
+        //     });
+        // });
     </script>
 </body>
 </html>

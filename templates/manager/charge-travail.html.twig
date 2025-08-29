@@ -1,123 +1,151 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Charge de travail par personne{% endblock %}</title>
-    <!-- Bootstrap CSS CDN -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
-    <!-- Bootstrap Icons CDN (IMPORTANT pour les icônes du sidebar) -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-    <style>
-        /* Styles pour le corps et le padding pour le sidebar */
-        body {
-            padding-left: 280px; /* Largeur du sidebar */
-            background-color: #F5F5F5; /* Couleur de fond gris très doux pour le contenu principal */
-        }
-        /* Pour la responsivité sur mobile, vous pourriez vouloir cacher le sidebar fixe et utiliser un offcanvas */
-        @media (max-width: 767.98px) { /* Moins de 768px (taille md de Bootstrap) */
-            body {
-                padding-left: 0; /* Pas de padding sur mobile si le sidebar est un offcanvas */
-            }
-            .sidebar-fixed-desktop { /* Cache le sidebar fixe sur mobile */
-                display: none !important;
-            }
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}Charge de travail par personne{% endblock %}</title>
 
-        /* Styles pour les cartes (si utilisées pour le tableau) */
-        .card {
-            border-radius: 12px; /* Bords plus arrondis */
-            border: 1px solid #e0e0e0; /* Bordure subtile */
-            box-shadow: 0 4px 15px rgba(0,0,0,0.08); /* Ombre plus douce et moderne */
-        }
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" />
 
-        /* Styles pour les en-têtes de tableau grisés */
-        .table-header-gray {
-            background-color: #e9ecef; /* Couleur grise claire de Bootstrap pour les en-têtes */
-            vertical-align: middle; /* Alignement vertical au milieu */
-            font-weight: 600; /* Un peu plus gras pour les en-têtes */
-            padding: 1rem 1.25rem; /* Padding augmenté pour les en-têtes */
-        }
+  <style>
+    body {
+      background-color: #F5F5F5;
+    }
 
-        /* Styles pour le tableau avec bordures minimalistes et alignements */
-        .table {
-            border-collapse: collapse; /* Fusionne les bordures des cellules */
-            margin-bottom: 0; /* Supprime la marge par défaut du tableau */
-            border-radius: 12px; /* Applique le border-radius au tableau entier */
-            overflow: hidden; /* Cache les coins des bordures internes */
-            border: 1px solid #dee2e6; /* Bordure générale du tableau */
-        }
-        .table th,
-        .table td {
-            border: 1px solid #dee2e6; /* Bordure pour toutes les cellules */
-            padding: 0.8rem 1.2rem; /* Padding ajusté pour une hauteur plus petite */
-            vertical-align: middle; /* Alignement vertical par défaut */
-        }
-        /* Styles pour les coins arrondis du tableau */
-        .table thead th:first-child {
-            border-top-left-radius: 12px;
-        }
-        .table thead th:last-child {
-            border-top-right-radius: 12px;
-        }
-        .table tbody tr:last-child td:first-child {
-            border-bottom-left-radius: 12px;
-        }
-        .table tbody tr:last-child td:last-child {
-            border-bottom-right-radius: 12px;
-        }
-    </style>
-    {% block stylesheets %}{% endblock %}
+    .sidebar-fixed-desktop {
+      width: 280px;
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100vh;
+      background: linear-gradient(to bottom, #ffffffdc, #c8dbebff);
+      padding: 1rem;
+      z-index: 1000;
+    }
+
+    @media (min-width: 768px) {
+      body {
+        padding-left: 280px;
+      }
+    }
+
+    @media (max-width: 767.98px) {
+      .sidebar-fixed-desktop {
+        display: none;
+      }
+    }
+
+    .card {
+      border-radius: 12px;
+      border: 1px solid #e0e0e0;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    }
+
+    .table-header-gray {
+      background-color: #e9ecef;
+      vertical-align: middle;
+      font-weight: 600;
+      padding: 1rem 1.25rem;
+    }
+
+    .table {
+      border-collapse: collapse;
+      margin-bottom: 0;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid #dee2e6;
+    }
+
+    .table th,
+    .table td {
+      border: 1px solid #dee2e6;
+      padding: 0.8rem 1.2rem;
+      vertical-align: middle;
+    }
+
+    .table thead th:first-child {
+      border-top-left-radius: 12px;
+    }
+
+    .table thead th:last-child {
+      border-top-right-radius: 12px;
+    }
+
+    .table tbody tr:last-child td:first-child {
+      border-bottom-left-radius: 12px;
+    }
+
+    .table tbody tr:last-child td:last-child {
+      border-bottom-right-radius: 12px;
+    }
+  </style>
+  {% block stylesheets %}{% endblock %}
 </head>
 <body>
-    {# Inclusion directe du Sidebar #}
-    <div class="sidebar-fixed-desktop">
-        {% include 'components/sidebar.html.twig' %}
+  <!-- Sidebar desktop -->
+  <div class="sidebar-fixed-desktop">
+    {% include 'components/sidebar-manager.html.twig' with {'active': 'charge'} %}
+  </div>
+
+  <!-- Bouton menu mobile -->
+  <div class="d-md-none p-3 bg-white shadow-sm d-flex justify-content-between align-items-center">
+    <h5 class="mb-0">Menu</h5>
+    <button class="btn btn-outline-primary" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileSidebar">
+      <i class="bi bi-list"></i>
+    </button>
+  </div>
+
+  <!-- Sidebar mobile -->
+  <div class="offcanvas offcanvas-start" tabindex="-1" id="mobileSidebar">
+    <div class="offcanvas-header">
+      <h5 class="offcanvas-title">Menu</h5>
+      <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas"></button>
+    </div>
+    <div class="offcanvas-body">
+      {% include 'components/sidebar-manager.html.twig' with {'active': 'charge'} %}
+    </div>
+  </div>
+
+  <!-- Main -->
+  <main class="container-fluid py-5">
+    <h1 class="mb-5 text-center">Charge de travail par personne</h1>
+
+    <div class="row justify-content-center">
+      <div class="col-md-10 col-lg-8">
+        <div class="card h-100">
+          <div class="card-body p-0">
+            <div class="table-responsive">
+              <table class="table table-hover mb-0">
+                <thead>
+                  <tr>
+                    <th scope="col" class="table-header-gray">Identifiant</th>
+                    <th scope="col" class="table-header-gray">Matricule</th>
+                    <th scope="col" class="table-header-gray">charge de travail</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for utilisateur in utilisateurs %}
+                  <tr>
+                    <td>{{ utilisateur.id }}</td>
+                    <td>{{ utilisateur.matricule }}</td>
+                    <td>{{ utilisateur.charges }}</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <main class="container-fluid py-5">
-        <h1 class="mb-5 text-center">Charge de travail par personne</h1>
+    {% block page_content %}{% endblock %}
+  </main>
 
-        <div class="row justify-content-center">
-            {# Largeur de la colonne pour la carte du tableau #}
-            <div class="col-md-10 col-lg-8"> {# Ajusté pour correspondre à la largeur de l'image #}
-                <div class="card h-100">
-                    <div class="card-body p-0">
-                        <div class="table-responsive">
-                            <table class="table table-hover mb-0">
-                                <thead>
-                                    <tr>
-                                        <th scope="col" class="table-header-gray">Identifiant</th>
-                                        <th scope="col" class="table-header-gray">Nom</th>
-                                        <th scope="col" class="table-header-gray">charge de travail</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {# Exemple de données. En production, ces données viendraient de votre backend. #}
-                                    <tr>
-                                        <td class="align-middle">1</td>
-                                        <td class="align-middle">Collaborateur 1</td>
-                                        <td class="align-middle">8</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="align-middle">2</td>
-                                        <td class="align-middle">Collaborateur 2</td>
-                                        <td class="align-middle">5</td>
-                                    </tr>
-                                    {# Ajoutez d'autres lignes de données ici si nécessaire #}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        {% block page_content %}{% endblock %}
-    </main>
-
-    <!-- Bootstrap JS CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
-    {% block javascripts %}{% endblock %}
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  {% block javascripts %}{% endblock %}
 </body>
 </html>

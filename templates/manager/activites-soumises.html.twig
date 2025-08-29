@@ -20,7 +20,7 @@
                 padding-left: 0; /* Pas de padding sur mobile si le sidebar est un offcanvas */
             }
             .sidebar-fixed-desktop { /* Cache le sidebar fixe sur mobile */
-                display: none !important;
+                /* display: none !important; */
             }
         }
 
@@ -125,11 +125,11 @@
 </head>
 <body>
     {# Inclusion directe du Sidebar #}
-    <div class="sidebar-fixed-desktop">
-        {% include 'components/sidebar.html.twig' %}
+    <div class="sidebar-fixed-desktop col-md-2">
+        {% include 'components/sidebar-manager.html.twig' with { 'active': 'soumises' } %}
     </div>
-
-    <main class="container-fluid py-5">
+    <div class="col-md-1" ></div>
+    <main class="container-fluid py-5 col-md-9">
         <h1 class="mb-5 text-center">Activité soumise par l'équipe</h1>
 
         <div class="row justify-content-center">
@@ -145,53 +145,39 @@
                                         <th>Activité</th>
                                         <th>Collaborateur</th>
                                         <th>Date d'échéance</th>
-                                        <th>Temps d'estimation</th>
-                                        <th>Priorité</th>
+                                        <th>Type</th>
                                         <th class="text-center-buttons">Actions</th> {# Colonne unique pour les actions #}
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {# Exemple d'activités soumises. En production, ces données viendraient de votre backend. #}
-                                    <tr data-activity-id="1">
-                                        <td>Activité 1</td>
-                                        <td>Collaborateur 1</td>
-                                        <td>06-08-2025</td>
-                                        <td>2</td>
-                                        <td>urgent</td>
-                                        <td class="text-center-buttons"> {# Colonne unique pour les boutons d'action #}
-                                            <div class="d-flex justify-content-center gap-2">
-                                                <button type="button" class="btn btn-action btn-view view-tasks-btn" title="Voir les tâches">
-                                                    <i class="bi bi-eye"></i> {# Icône pour "Voir les tâches" #}
-                                                </button>
-                                                <button type="button" class="btn btn-action btn-delete delete-activity-btn" title="Supprimer">
-                                                    <i class="bi bi-trash"></i> {# Icône pour "Supprimer" #}
-                                                </button>
-                                                <button type="button" class="btn btn-action btn-modify modify-activity-btn" title="Modifier">
-                                                    <i class="bi bi-pencil"></i> {# Icône pour "Modifier" #}
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <tr data-activity-id="2">
-                                        <td>Activité 1</td>
-                                        <td>Collaborateur 1</td>
-                                        <td>10-08-2025</td>
-                                        <td>5</td>
-                                        <td>moyenne</td>
-                                        <td class="text-center-buttons"> {# Colonne unique pour les boutons d'action #}
-                                            <div class="d-flex justify-content-center gap-2">
-                                                <button type="button" class="btn btn-action btn-view view-tasks-btn" title="Voir les tâches">
-                                                    <i class="bi bi-eye"></i> {# Icône pour "Voir les tâches" #}
-                                                </button>
-                                                <button type="button" class="btn btn-action btn-delete delete-activity-btn" title="Supprimer">
-                                                    <i class="bi bi-trash"></i> {# Icône pour "Supprimer" #}
-                                                </button>
-                                                <button type="button" class="btn btn-action btn-modify modify-activity-btn" title="Modifier">
-                                                    <i class="bi bi-pencil"></i> {# Icône pour "Modifier" #}
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
+
+                                    {% for activite in activites %}
+                                        <tr data-activity-id="1">
+                                            <td> {{activite.activite}} </td>
+                                            <td> {{activite.utilisateurAuteur.matricule}} </td>
+                                            <td> {{activite.dateEcheance|date('d/m/Y')}} </td>
+                                            <td>{{activite.typeActivite.typeActivite}}</td>
+                                            {# <td>urgent</td> #}
+                                            <td class="text-center-buttons"> {# Colonne unique pour les boutons d'action #}
+                                                <div class="d-flex justify-content-center gap-2">
+                                                    <a href="/taches/activite/soumise/{{activite.id}}">
+                                                        <button type="button" class="btn btn-action btn-view view-tasks-btn" title="Voir les tâches">
+                                                            <i class="bi bi-eye"></i> {# Icône pour "Voir les tâches" #}
+                                                        </button>
+                                                    </a>
+                                                    <a href="/manager/activite/supprimer/{{activite.id}}">
+                                                        <button type="button" class="btn btn-action btn-delete delete-activity-btn" title="Supprimer">
+                                                            <i class="bi bi-trash"></i> {# Icône pour "Supprimer" #}
+                                                        </button>
+                                                    </a>
+                                                    <button type="button" class="btn btn-action btn-modify modify-activity-btn" title="Modifier">
+                                                        <i class="bi bi-pencil"></i> {# Icône pour "Modifier" #}
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
                                     {# Ajoutez d'autres lignes de données ici si nécessaire #}
                                 </tbody>
                              </table>
@@ -209,36 +195,36 @@
     {% block javascripts %}{% endblock %}
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            document.querySelectorAll('.view-tasks-btn').forEach(button => {
-                button.addEventListener('click', function() {
-                    const activityId = this.closest('tr').dataset.activityId;
-                    console.log(`Bouton 'Voir les tâches' cliqué pour l'activité ID: ${activityId}`);
-                    // Rediriger vers la page des tâches de l'activité
-                    // window.location.href = `/activities/${activityId}/tasks`;
-                });
-            });
+        // document.addEventListener('DOMContentLoaded', function() {
+        //     document.querySelectorAll('.view-tasks-btn').forEach(button => {
+        //         button.addEventListener('click', function() {
+        //             const activityId = this.closest('tr').dataset.activityId;
+        //             console.log(`Bouton 'Voir les tâches' cliqué pour l'activité ID: ${activityId}`);
+        //             // Rediriger vers la page des tâches de l'activité
+        //             // window.location.href = `/activities/${activityId}/tasks`;
+        //         });
+        //     });
 
-            document.querySelectorAll('.delete-activity-btn').forEach(button => {
-                button.addEventListener('click', function() {
-                    const activityId = this.closest('tr').dataset.activityId;
-                    if (confirm(`Êtes-vous sûr de vouloir supprimer l'activité ID: ${activityId} ?`)) {
-                        console.log(`Bouton 'Supprimer' cliqué pour l'activité ID: ${activityId}`);
-                        // Ici, vous enverriez une requête DELETE au backend Symfony
-                        // fetch(`/activities/${activityId}`, { method: 'DELETE' }).then(...);
-                    }
-                });
-            });
+        //     document.querySelectorAll('.delete-activity-btn').forEach(button => {
+        //         button.addEventListener('click', function() {
+        //             const activityId = this.closest('tr').dataset.activityId;
+        //             if (confirm(`Êtes-vous sûr de vouloir supprimer l'activité ID: ${activityId} ?`)) {
+        //                 console.log(`Bouton 'Supprimer' cliqué pour l'activité ID: ${activityId}`);
+        //                 // Ici, vous enverriez une requête DELETE au backend Symfony
+        //                 // fetch(`/activities/${activityId}`, { method: 'DELETE' }).then(...);
+        //             }
+        //         });
+        //     });
 
-            document.querySelectorAll('.modify-activity-btn').forEach(button => {
-                button.addEventListener('click', function() {
-                    const activityId = this.closest('tr').dataset.activityId;
-                    console.log(`Bouton 'Modifier' cliqué pour l'activité ID: ${activityId}`);
-                    // Rediriger vers la page de modification de l'activité
-                    // window.location.href = `/activities/${activityId}/edit`;
-                });
-            });
-        });
+        //     document.querySelectorAll('.modify-activity-btn').forEach(button => {
+        //         button.addEventListener('click', function() {
+        //             const activityId = this.closest('tr').dataset.activityId;
+        //             console.log(`Bouton 'Modifier' cliqué pour l'activité ID: ${activityId}`);
+        //             // Rediriger vers la page de modification de l'activité
+        //             // window.location.href = `/activities/${activityId}/edit`;
+        //         });
+        //     });
+        // });
     </script>
 </body>
 </html>

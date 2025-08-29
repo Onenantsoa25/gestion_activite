@@ -20,7 +20,7 @@
                 padding-left: 0; /* Pas de padding sur mobile si le sidebar est un offcanvas */
             }
             .sidebar-fixed-desktop { /* Cache le sidebar fixe sur mobile */
-                display: none !important;
+                /* display: none !important; */
             }
         }
 
@@ -49,15 +49,53 @@
             white-space: nowrap; /* Empêche le texte des boutons de passer à la ligne */
             text-align: center; /* Centrer le contenu des en-têtes de ces colonnes */
         }
+        
+        /* Style pour les icônes d'action */
+        .action-icon {
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 0.3rem 0.5rem;
+            border-radius: 50%;
+            transition: all 0.2s;
+        }
+        
+        .action-icon:hover {
+            transform: scale(1.1);
+        }
+        
+        .view-icon {
+            color: #28a745; /* Vert Bootstrap */
+        }
+        
+        .view-icon:hover {
+            background-color: rgba(40, 167, 69, 0.1);
+        }
+        
+        .end-icon {
+            color: #dc3545; /* Rouge Bootstrap */
+        }
+        
+        .end-icon:hover {
+            background-color: rgba(220, 53, 69, 0.1);
+        }
+        
+        .disabled-icon {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
     </style>
     {% block stylesheets %}{% endblock %}
 </head>
 <body>
+    <div class="row">
+    <div class="col-md-2">
     {# Inclusion directe du Sidebar #}
     <div class="sidebar-fixed-desktop">
-        {% include 'components/sidebar.html.twig' %}
+        {% include 'components/sidebar.html.twig' with {'active': 'activite'} %}
+    </div>
     </div>
 
+    <div class="col-md-10">
     <main class="container-fluid py-4">
         <h1 class="mb-4 text-center">Liste des activités</h1>
 
@@ -72,39 +110,41 @@
                                 <thead>
                                     <tr>
                                         <th scope="col" class="table-header-gray">Activité</th>
-                                        <th scope="col" class="table-header-gray col-action-buttons"></th> {# Applique la classe pour la largeur compacte #}
-                                        <th scope="col" class="table-header-gray col-action-buttons"></th> {# Applique la classe pour la largeur compacte #}
+                                        <th scope="col" class="table-header-gray col-action-buttons">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
+                                    {% for activite in activites %}
+                                        <tr data-activity-id="1" data-activity-status="not_started">
+                                            <td class="align-middle">{{activite.nom_activite}}</td>
+                                            <td class="text-center-buttons">
+                                                <a href="/collaborateur/taches/activite?id_activite={{activite.id_activite}}"><i class="bi bi-eye-fill view-icon action-icon" title="Voir"></i></a>
+                                                <i class="bi bi-stop-circle-fill end-icon action-icon action-icon" title="Terminer" ></i>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
                                     {# Exemple d'activités. En production, ces données viendraient de votre backend. #}
-                                    <tr data-activity-id="1" data-activity-status="not_started">
+                                    {# <tr data-activity-id="1" data-activity-status="not_started">
                                         <td class="align-middle">Préparer le rapport mensuel détaillé pour la direction et s'assurer de l'exactitude des chiffres.</td>
                                         <td class="text-center-buttons">
-                                            <button type="button" class="btn btn-sm btn-success start-activity-btn">Commencer</button>
-                                        </td>
-                                        <td class="text-center-buttons">
-                                            <button type="button" class="btn btn-sm btn-danger end-activity-btn" disabled>Terminer</button>
+                                            <i class="bi bi-eye-fill view-icon action-icon" title="Voir"></i>
+                                            <i class="bi bi-stop-circle-fill end-icon action-icon disabled-icon" title="Terminer" disabled></i>
                                         </td>
                                     </tr>
                                     <tr data-activity-id="2" data-activity-status="not_started">
                                         <td class="align-middle">Mettre à jour la base de données clients avec les nouvelles informations de contact et les préférences.</td>
                                         <td class="text-center-buttons">
-                                            <button type="button" class="btn btn-sm btn-success start-activity-btn">Commencer</button>
-                                        </td>
-                                        <td class="text-center-buttons">
-                                            <button type="button" class="btn btn-sm btn-danger end-activity-btn" disabled>Terminer</button>
+                                            <i class="bi bi-eye-fill view-icon action-icon" title="Voir"></i>
+                                            <i class="bi bi-stop-circle-fill end-icon action-icon disabled-icon" title="Terminer" disabled></i>
                                         </td>
                                     </tr>
                                     <tr data-activity-id="3" data-activity-status="not_started">
                                         <td class="align-middle">Organiser la réunion d'équipe hebdomadaire, préparer l'ordre du jour et envoyer les invitations.</td>
                                         <td class="text-center-buttons">
-                                            <button type="button" class="btn btn-sm btn-success start-activity-btn">Commencer</button>
+                                            <i class="bi bi-eye-fill view-icon action-icon" title="Voir"></i>
+                                            <i class="bi bi-stop-circle-fill end-icon action-icon disabled-icon" title="Terminer" disabled></i>
                                         </td>
-                                        <td class="text-center-buttons">
-                                            <button type="button" class="btn btn-sm btn-danger end-activity-btn" disabled>Terminer</button>
-                                        </td>
-                                    </tr>
+                                    </tr> #}
                                     {# Ajoutez d'autres lignes de données ici si nécessaire #}
                                 </tbody>
                             </table>
@@ -123,31 +163,40 @@
     {% block javascripts %}{% endblock %}
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            document.querySelectorAll('.start-activity-btn').forEach(button => {
-                button.addEventListener('click', function() {
-                    const row = this.closest('tr');
-                    const endButton = row.querySelector('.end-activity-btn');
+        // document.addEventListener('DOMContentLoaded', function() {
+        //     document.querySelectorAll('.view-icon').forEach(icon => {
+        //         icon.addEventListener('click', function() {
+        //             if (this.classList.contains('disabled-icon')) return;
+                    
+        //             const row = this.closest('tr');
+        //             const endIcon = row.querySelector('.end-icon');
+                    
+        //             // Désactiver l'icône "Voir" après clic
+        //             this.classList.add('disabled-icon');
+        //             // Activer l'icône "Terminer"
+        //             endIcon.classList.remove('disabled-icon');
+        //             row.dataset.activityStatus = 'in_progress';
+        //             console.log(`Activité ${row.dataset.activityId} vue/commencée.`);
+        //         });
+        //     });
 
-                    this.disabled = true; // Désactiver le bouton "Commencer"
-                    endButton.disabled = false; // Activer le bouton "Terminer"
-                    row.dataset.activityStatus = 'in_progress'; // Mettre à jour le statut
-                    console.log(`Activité ${row.dataset.activityId} commencée.`);
-                });
-            });
-
-            document.querySelectorAll('.end-activity-btn').forEach(button => {
-                button.addEventListener('click', function() {
-                    const row = this.closest('tr');
-                    const startButton = row.querySelector('.start-activity-btn');
-
-                    this.disabled = true; // Désactiver le bouton "Terminer"
-                    startButton.disabled = true; // Désactiver le bouton "Commencer"
-                    row.dataset.activityStatus = 'completed'; // Mettre à jour le statut
-                    console.log(`Activité ${row.dataset.activityId} terminée.`);
-                });
-            });
-        });
+        //     document.querySelectorAll('.end-icon').forEach(icon => {
+        //         icon.addEventListener('click', function() {
+        //             if (this.classList.contains('disabled-icon')) return;
+                    
+        //             const row = this.closest('tr');
+        //             const viewIcon = row.querySelector('.view-icon');
+                    
+        //             // Désactiver les deux icônes après clic
+        //             this.classList.add('disabled-icon');
+        //             viewIcon.classList.add('disabled-icon');
+        //             row.dataset.activityStatus = 'completed';
+        //             console.log(`Activité ${row.dataset.activityId} terminée.`);
+        //         });
+        //     });
+        // });
     </script>
+    </div>
+    </div>
 </body>
 </html>

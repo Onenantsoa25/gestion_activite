@@ -125,7 +125,7 @@
 <body>
     <!-- ✅ Sidebar inclus -->
     <div class="sidebar-fixed-desktop">
-        {% include 'components/sidebar.html.twig' %}
+        {% include 'components/sidebar-manager.html.twig' with {'active': 'soumises'} %}
     </div>
 
     <main class="container-fluid py-5">
@@ -148,23 +148,26 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr data-task-id="1">
-                                        <td>Préparer rapport mensuel</td>
-                                        <td>30/07/2025</td>
-                                        <td>Urgente</td>
-                                        <td>3</td>
-                                        <td class="action-col">
-                                            <button type="button" class="btn btn-sm btn-modify btn-action" title="Modifier">
-                                                <i class="bi bi-pencil-square"></i>
-                                            </button>
-                                        </td>
-                                        <td class="action-col">
-                                            <button type="button" class="btn btn-sm btn-delete btn-action" title="Supprimer">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                    <tr data-task-id="2">
+                                    {% for tache in taches %}
+                                        <tr data-task-id="1">
+                                            <td>{{tache.tache}}</td>
+                                            <td>{{tache.dateEcheance|date('d/m/Y')}}</td>
+                                            {# <td>Urgente</td> #}
+                                            <td> {{tache.estimation}} </td>
+                                            <td class="action-col">
+                                                <button type="button" class="btn btn-sm btn-modify btn-action" title="Modifier">
+                                                    <i class="bi bi-pencil-square"></i>
+                                                </button>
+                                            </td>
+                                            <td class="action-col">
+                                                <button type="button" class="btn btn-sm btn-delete btn-action" title="Supprimer">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </td>
+                                        </tr>                                        
+                                    {% endfor %}
+
+                                    {# <tr data-task-id="2">
                                         <td>Appeler le fournisseur</td>
                                         <td>05/08/2025</td>
                                         <td>Normale</td>
@@ -179,7 +182,7 @@
                                                 <i class="bi bi-trash"></i>
                                             </button>
                                         </td>
-                                    </tr>
+                                    </tr> #}
                                     {# ➕ Ajoute plus de lignes ici #}
                                 </tbody>
                             </table>
@@ -191,7 +194,7 @@
 
         <div class="row mt-5">
             <div class="col-12 text-center">
-                <button type="button" class="btn btn-lg btn-validate">Valider</button>
+                <a href="/manager/valider/activite/{{activite.id}}"><button type="button" class="btn btn-lg btn-validate">Valider</button></a>
             </div>
         </div>
 
@@ -205,27 +208,27 @@
 
     <!-- ✅ JS interactions -->
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            document.querySelectorAll('.btn-modify').forEach(button => {
-                button.addEventListener('click', function() {
-                    const taskId = this.closest('tr').dataset.taskId;
-                    console.log(`Modifier tâche ID: ${taskId}`);
-                });
-            });
+        // document.addEventListener('DOMContentLoaded', function() {
+        //     document.querySelectorAll('.btn-modify').forEach(button => {
+        //         button.addEventListener('click', function() {
+        //             const taskId = this.closest('tr').dataset.taskId;
+        //             console.log(`Modifier tâche ID: ${taskId}`);
+        //         });
+        //     });
 
-            document.querySelectorAll('.btn-delete').forEach(button => {
-                button.addEventListener('click', function() {
-                    const taskId = this.closest('tr').dataset.taskId;
-                    if (confirm(`Êtes-vous sûr de vouloir supprimer la tâche ID: ${taskId} ?`)) {
-                        console.log(`Supprimer tâche ID: ${taskId}`);
-                    }
-                });
-            });
+        //     document.querySelectorAll('.btn-delete').forEach(button => {
+        //         button.addEventListener('click', function() {
+        //             const taskId = this.closest('tr').dataset.taskId;
+        //             if (confirm(`Êtes-vous sûr de vouloir supprimer la tâche ID: ${taskId} ?`)) {
+        //                 console.log(`Supprimer tâche ID: ${taskId}`);
+        //             }
+        //         });
+        //     });
 
-            document.querySelector('.btn-validate')?.addEventListener('click', function() {
-                console.log("Validation effectuée");
-            });
-        });
+        //     document.querySelector('.btn-validate')?.addEventListener('click', function() {
+        //         console.log("Validation effectuée");
+        //     });
+        // });
     </script>
 </body>
 </html>

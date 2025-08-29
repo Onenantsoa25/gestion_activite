@@ -20,7 +20,7 @@
                 padding-left: 0; /* Pas de padding sur mobile si le sidebar est un offcanvas */
             }
             .sidebar-fixed-desktop { /* Cache le sidebar fixe sur mobile */
-                display: none !important;
+                /* display: none !important; */
             }
         }
 
@@ -55,7 +55,7 @@
 <body>
     {# Inclusion directe du Sidebar #}
     <div class="sidebar-fixed-desktop">
-        {% include 'components/sidebar.html.twig' %}
+        {% include 'components/sidebar.html.twig' with {'active': 'activite'} %}
     </div>
 
     <main class="container-fluid py-5">
@@ -65,11 +65,24 @@
             <div class="col-md-6 col-lg-4"> {# Colonne pour centrer le formulaire et limiter sa largeur #}
                 <div class="card p-4"> {# Utilisation d'une carte pour encadrer le formulaire #}
                     <div class="card-body">
-                        <form>
+                        <form action="/collaborateur/tache/terminer" method="POST" enctype="multipart/form-data">
                             <div class="mb-4">
                                 <label for="tempsPasse" class="form-label">Temps passé</label>
-                                <input type="number" class="form-control" id="tempsPasse" placeholder="Ex: 8" min="0" step="0.5">
+                                <input type="number" class="form-control" id="tempsPasse" placeholder="Ex: 8" min="0" step="0.5" name="temps_passe">
                             </div>
+
+                            <div class="mb-4">
+                                <label for="commentaire" class="form-label">Commentaire</label>
+                                <textarea class="form-control" id="commentaire" name="commentaire" rows="3" placeholder="Ajoutez un commentaire..."></textarea>
+                            </div>
+
+                            <div class="mb-4">
+                                <label for="justificatif" class="form-label">Justificatif (PDF ou image)</label>
+                                <input type="file" class="form-control" id="justificatif" name="justificatif" accept=".pdf, image/*">
+                            </div>
+
+                            <input type="hidden" name="id_tache" value="{{ tache.id }}">
+
                             <div class="text-center mt-4">
                                 <button type="submit" class="btn btn-primary btn-lg">Terminer</button>
                             </div>
@@ -87,18 +100,18 @@
     {% block javascripts %}{% endblock %}
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            document.querySelector('form').addEventListener('submit', function(event) {
-                event.preventDefault(); // Empêche la soumission par défaut du formulaire
+        // document.addEventListener('DOMContentLoaded', function() {
+        //     document.querySelector('form').addEventListener('submit', function(event) {
+        //         event.preventDefault(); // Empêche la soumission par défaut du formulaire
 
-                const tempsPasse = document.getElementById('tempsPasse').value;
+        //         const tempsPasse = document.getElementById('tempsPasse').value;
 
-                console.log('Temps passé pour la tâche:', tempsPasse);
+        //         console.log('Temps passé pour la tâche:', tempsPasse);
 
-                // Ici, vous intégreriez votre logique pour envoyer ces données au backend Symfony
-                // Par exemple, via une requête Fetch API.
-            });
-        });
+        //         // Ici, vous intégreriez votre logique pour envoyer ces données au backend Symfony
+        //         // Par exemple, via une requête Fetch API.
+        //     });
+        // });
     </script>
 </body>
 </html>

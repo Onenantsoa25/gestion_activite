@@ -20,7 +20,7 @@
                 padding-left: 0; /* Pas de padding sur mobile si le sidebar est un offcanvas */
             }
             .sidebar-fixed-desktop { /* Cache le sidebar fixe sur mobile */
-                display: none !important;
+                /* display: none !important; */
             }
         }
 
@@ -74,7 +74,7 @@
 <body>
     {# Inclusion directe du Sidebar #}
     <div class="sidebar-fixed-desktop">
-        {% include 'components/sidebar.html.twig' %}
+        {% include 'components/sidebar.html.twig' with {'active': 'notifications'} %}
     </div>
 
     <main class="container-fluid py-5">
@@ -87,7 +87,28 @@
             <div class="col-md-10 col-lg-8"> {# Largeur du conteneur des notifications #}
                 {# Liste des notifications sous forme de cartes #}
                 <div class="notification-list">
-                    <div class="notification-card" data-notification-id="1">
+                    {% for notification in notifications %}
+                        <div class="notification-card" data-notification-id="1">
+                            <div class="card-body">
+                                <div class="notification-header">
+                                    <span class="notification-label">{{notification.message}}</span>
+                                    <span class="notification-date">{{notification.dateCreation|date('d/m/Y H:i')}}</span>
+                                </div>
+                                {% if notification.typeNotif == "mission" %}
+                                    <div class="notification-actions">
+                                        <a href="/notification/planifier-tache/{{notification.tache.id}}" >
+                                            <button type="button" class="btn btn-sm btn-primary mark-as-read-btn">Planifier</button>
+                                        </a>
+                                    </div>
+                                {% elseif notification.typeNotif == "tache" %}
+                                    <div class="notification-actions">
+                                        <button type="button" class="btn btn-sm btn-primary mark-as-read-btn">Marquez comme lue</button>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                    {# <div class="notification-card" data-notification-id="1">
                         <div class="card-body">
                             <div class="notification-header">
                                 <span class="notification-label">Tâche 1 reportée le 30-07-2025</span>
@@ -109,7 +130,7 @@
                                 <button type="button" class="btn btn-sm btn-primary mark-as-read-btn">Marquez comme lue</button>
                             </div>
                         </div>
-                    </div>
+                    </div> #}
 
                     {# Ajoutez d'autres notifications ici si nécessaire #}
                 </div>

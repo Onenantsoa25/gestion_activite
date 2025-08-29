@@ -1,123 +1,196 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Création d'une nouvelle tâche{% endblock %}</title>
-    <!-- Bootstrap CSS CDN -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
-    <!-- Bootstrap Icons CDN (IMPORTANT pour les icônes du sidebar) -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-    <style>
-        /* Styles pour le corps et le padding pour le sidebar */
-        body {
-            padding-left: 280px; /* Largeur du sidebar */
-            background-color: #F5F5F5; /* Couleur de fond gris très doux pour le contenu principal */
-        }
-        /* Pour la responsivité sur mobile, vous pourriez vouloir cacher le sidebar fixe et utiliser un offcanvas */
-        @media (max-width: 767.98px) { /* Moins de 768px (taille md de Bootstrap) */
-            body {
-                padding-left: 0; /* Pas de padding sur mobile si le sidebar est un offcanvas */
-            }
-            .sidebar-fixed-desktop { /* Cache le sidebar fixe sur mobile */
-                display: none !important;
-            }
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{% block title %}Création d'une nouvelle tâche{% endblock %}</title>
 
-        /* Styles pour les cartes (si utilisées pour le formulaire) */
-        .card {
-            border-radius: 12px; /* Bords plus arrondis */
-            border: 1px solid #e0e0e0; /* Bordure subtile */
-            box-shadow: 0 4px 15px rgba(0,0,0,0.08); /* Ombre plus douce et moderne */
-        }
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous" />
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" />
 
-        /* Styles pour les labels de formulaire */
-        .form-label {
-            font-weight: 500; /* Rendre les labels un peu plus gras */
-            color: #343a40; /* Couleur de texte foncée */
-            margin-bottom: 0.5rem; /* Espacement sous le label */
-        }
+  <style>
+    body {
+      padding-left: 280px;
+      background-color: #F5F5F5;
+      transition: padding-left 0.3s ease;
+    }
+    /* Sidebar fixe desktop */
+    .sidebar-fixed-desktop {
+      width: 280px;
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100vh;
+      background: linear-gradient(to bottom, #ffffffdc, #c8dbebff);
+      padding: 1rem;
+      z-index: 1050;
+      overflow-y: auto;
+    }
+    /* Cacher sidebar fixe sur mobile */
+    @media (max-width: 767.98px) {
+      body {
+        padding-left: 0;
+      }
+      .sidebar-fixed-desktop {
+        display: none !important;
+      }
+    }
 
-        /* Styles pour les inputs */
-        .form-control, .form-select {
-            border-radius: 8px; /* Bords arrondis pour les inputs */
-            border: 1px solid #ced4da; /* Bordure standard */
-            padding: 0.75rem 1rem; /* Padding confortable */
-            box-shadow: inset 0 1px 2px rgba(0,0,0,0.05); /* Ombre interne subtile */
-        }
-        .form-control:focus, .form-select:focus {
-            border-color: #80bdff; /* Couleur de focus Bootstrap */
-            box-shadow: 0 0 0 0.25rem rgba(13,110,253,.25); /* Ombre de focus Bootstrap */
-        }
-    </style>
-    {% block stylesheets %}{% endblock %}
+    /* Bouton menu mobile */
+    .mobile-menu-bar {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1100;
+      background: white;
+      padding: 0.75rem 1rem;
+      box-shadow: 0 2px 6px rgb(0 0 0 / 0.1);
+      align-items: center;
+      justify-content: space-between;
+    }
+    @media (max-width: 767.98px) {
+      .mobile-menu-bar {
+        display: flex;
+      }
+      main.container-fluid {
+        padding-top: 3.5rem; /* laisser la place au menu fixe */
+      }
+    }
+
+    main.container-fluid {
+      margin-left: 280px;
+      width: calc(100% - 280px);
+      padding: 3rem 1rem 1rem 1rem;
+      transition: margin-left 0.3s ease, width 0.3s ease;
+    }
+
+    @media (max-width: 767.98px) {
+      main.container-fluid {
+        margin-left: 0;
+        width: 100%;
+        padding: 1rem 0.5rem 1rem 0.5rem;
+      }
+    }
+
+    .card {
+      border-radius: 12px;
+      border: 1px solid #e0e0e0;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    }
+
+    .form-label {
+      font-weight: 500;
+      color: #343a40;
+      margin-bottom: 0.5rem;
+    }
+
+    .form-control,
+    .form-select {
+      border-radius: 8px;
+      border: 1px solid #ced4da;
+      padding: 0.75rem 1rem;
+      box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
+      transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    }
+
+    .form-control:focus,
+    .form-select:focus {
+      border-color: #80bdff;
+      box-shadow: 0 0 0 0.25rem rgba(13,110,253,.25);
+      outline: 0;
+    }
+  </style>
+  {% block stylesheets %}{% endblock %}
 </head>
 <body>
-    {# Inclusion directe du Sidebar #}
-    <div class="sidebar-fixed-desktop">
-        {% include 'components/sidebar.html.twig' %}
+
+  <!-- Sidebar fixe desktop -->
+  <div class="sidebar-fixed-desktop">
+    {% include 'components/sidebar-manager.html.twig' with {'active': 'activite'} %}
+  </div>
+
+  <!-- Barre menu mobile -->
+  <div class="mobile-menu-bar d-md-none">
+    <h5 class="mb-0">Menu</h5>
+    <button class="btn btn-outline-primary" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileSidebar" aria-label="Ouvrir le menu">
+      <i class="bi bi-list fs-4"></i>
+    </button>
+  </div>
+
+  <!-- Sidebar mobile offcanvas -->
+  <div class="offcanvas offcanvas-start" tabindex="-1" id="mobileSidebar" aria-labelledby="mobileSidebarLabel">
+    <div class="offcanvas-header">
+      <h5 id="mobileSidebarLabel" class="offcanvas-title">Menu</h5>
+      <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Fermer"></button>
+    </div>
+    <div class="offcanvas-body">
+      {% include 'components/sidebar-manager.html.twig' with {'active': 'activite'} %}
+    </div>
+  </div>
+
+  <!-- Contenu principal -->
+  <main class="container-fluid py-5">
+    <h1 class="mb-5 text-center">Création d'une nouvelle tâche</h1>
+
+    <div class="row justify-content-center">
+      <div class="col-md-8 col-lg-6">
+        <div class="card p-4">
+          <div class="card-body">
+            <form action="/manager/tache/ajouter" method="POST" novalidate>
+              <div class="mb-4">
+                <label for="taskName" class="form-label">Tâche</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="taskName"
+                  placeholder="Nom de la tâche"
+                  name="nom"
+                  required
+                />
+              </div>
+              <div class="mb-4">
+                <label for="estimation" class="form-label">Estimation (en heures)</label>
+                <input
+                  type="number"
+                  step="0.1"
+                  min="0"
+                  class="form-control"
+                  id="estimation"
+                  name="estimation"
+                  placeholder="Ex : 1.5 pour 1h30"
+                  required
+                />
+              </div>
+              <div class="mb-4">
+                <label for="dueDate" class="form-label">Date d'échéance</label>
+                <input
+                  type="datetime-local"
+                  class="form-control"
+                  id="dueDate"
+                  name="date"
+                  required
+                />
+              </div>
+
+              <div class="text-center mt-5">
+                <button type="submit" class="btn btn-primary btn-lg">Créer</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <main class="container-fluid py-5">
-        <h1 class="mb-5 text-center">Création d'une nouvelle tâche</h1>
+    {% block page_content %}{% endblock %}
+  </main>
 
-        <div class="row justify-content-center">
-            <div class="col-md-8 col-lg-6"> {# Colonne pour centrer le formulaire et limiter sa largeur #}
-                <div class="card p-4"> {# Utilisation d'une carte pour encadrer le formulaire #}
-                    <div class="card-body">
-                        <form>
-                            <div class="mb-4">
-                                <label for="taskName" class="form-label">Tâche</label>
-                                <input type="text" class="form-control" id="taskName" placeholder="Nom de la tâche">
-                            </div>
-                            <div class="mb-4">
-                                <label for="dueDate" class="form-label">Date d'échéance</label>
-                                <input type="date" class="form-control" id="dueDate">
-                            </div>
-                            <div class="mb-4">
-                                <label for="activity" class="form-label">Activité</label>
-                                <select class="form-select" id="activity">
-                                    <option selected>Sélectionnez une activité</option>
-                                    <option value="1">Activité A</option>
-                                    <option value="2">Activité B</option>
-                                    <option value="3">Activité C</option>
-                                </select>
-                            </div>
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+  {% block javascripts %}{% endblock %}
 
-                            <div class="text-center mt-5">
-                                <button type="submit" class="btn btn-primary btn-lg">Créer</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        {% block page_content %}{% endblock %}
-    </main>
-
-    <!-- Bootstrap JS CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
-    {% block javascripts %}{% endblock %}
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            document.querySelector('form').addEventListener('submit', function(event) {
-                event.preventDefault(); // Empêche la soumission par défaut du formulaire
-
-                const taskName = document.getElementById('taskName').value;
-                const dueDate = document.getElementById('dueDate').value;
-                const activity = document.getElementById('activity').value;
-
-                console.log('Création de tâche déclenchée :');
-                console.log('Nom de la tâche:', taskName);
-                console.log('Date d\'échéance:', dueDate);
-                console.log('Activité sélectionnée:', activity);
-
-                // Ici, vous intégreriez votre logique pour envoyer ces données au backend Symfony
-                // pour créer une nouvelle tâche.
-            });
-        });
-    </script>
 </body>
 </html>

@@ -26,7 +26,7 @@ CREATE TABLE utilisateur(
 );
 
 CREATE TABLE activite(
-   id_activite VARCHAR(50) ,
+   id_activite INT AUTO_INCREMENT,
    activite VARCHAR(100)  NOT NULL,
    date_debut DATE,
    date_echeance DATE NOT NULL,
@@ -36,7 +36,7 @@ CREATE TABLE activite(
 --    matricule INT,
    PRIMARY KEY(id_activite),
    FOREIGN KEY(id_type_activite) REFERENCES type_activite(id_type_activite),
---    FOREIGN KEY(id_utilisateur_auteur, matricule) REFERENCES utilisateur(id_utilisateur, matricule)
+   FOREIGN KEY(id_utilisateur_auteur) REFERENCES utilisateur(id_utilisateur)
 );
 
 CREATE TABLE tache(
@@ -44,11 +44,11 @@ CREATE TABLE tache(
    tache VARCHAR(150) ,
    debut DATETIME,
    date_echeance VARCHAR(50)  NOT NULL,
-   id_utilisateur INT NOT NULL,
-   matricule INT NOT NULL,
-   id_activite VARCHAR(50)  NOT NULL,
+   id_utilisateur INT,
+   -- matricule INT NOT NULL,
+   id_activite INT  NOT NULL,
    PRIMARY KEY(id_tache),
-   FOREIGN KEY(id_utilisateur, matricule) REFERENCES utilisateur(id_utilisateur, matricule),
+   FOREIGN KEY(id_utilisateur) REFERENCES utilisateur(id_utilisateur),
    FOREIGN KEY(id_activite) REFERENCES activite(id_activite)
 );
 
@@ -60,7 +60,7 @@ CREATE TABLE anomalie(
    matricule INT NOT NULL,
    id_type_anomalie INT NOT NULL,
    PRIMARY KEY(id_anomalie),
-   FOREIGN KEY(id_utilisateur, matricule) REFERENCES utilisateur(id_utilisateur, matricule),
+   FOREIGN KEY(id_utilisateur) REFERENCES utilisateur(id_utilisateur),
    FOREIGN KEY(id_type_anomalie) REFERENCES type_anomalie(id_type_anomalie)
 );
 
@@ -68,7 +68,7 @@ CREATE TABLE activite_terminee(
    id_activite_terminee INT AUTO_INCREMENT,
    date_terminee DATETIME NOT NULL,
    temps_passe DECIMAL(15,2)   NOT NULL,
-   id_activite VARCHAR(50)  NOT NULL,
+   id_activite INT  NOT NULL,
    PRIMARY KEY(id_activite_terminee),
    UNIQUE(id_activite),
    FOREIGN KEY(id_activite) REFERENCES activite(id_activite)
@@ -85,7 +85,7 @@ CREATE TABLE tache_terminee(
 );
 
 CREATE TABLE historique_tache(
-   id_changement VARCHAR(50) ,
+   id_changement INT AUTO_INCREMENT, 
    debut DATETIME NOT NULL,
    date_echeance DATETIME NOT NULL,
    id_tache INT NOT NULL,
@@ -94,11 +94,11 @@ CREATE TABLE historique_tache(
 );
 
 CREATE TABLE modification_activite(
-   id_modif VARCHAR(50) ,
+   id_modif INT AUTO_INCREMENT, 
    activite VARCHAR(100)  NOT NULL,
    date_debut DATE,
    date_echeance DATE NOT NULL,
-   id_activite VARCHAR(50)  NOT NULL,
+   id_activite INT  NOT NULL,
    PRIMARY KEY(id_modif),
    FOREIGN KEY(id_activite) REFERENCES activite(id_activite)
 );
@@ -106,8 +106,46 @@ CREATE TABLE modification_activite(
 CREATE TABLE activite_supprimees(
    id_suppression INT AUTO_INCREMENT,
    date_suppression DATETIME NOT NULL,
-   id_activite VARCHAR(50)  NOT NULL,
+   id_activite INT  NOT NULL,
    PRIMARY KEY(id_suppression),
    UNIQUE(id_activite),
    FOREIGN KEY(id_activite) REFERENCES activite(id_activite)
 );
+
+
+
+
+CREATE TABLE auth_token(
+   id INT AUTO_INCREMENT,
+   utilisateur_id INT NOT NULL,
+   value VARCHAR(255) NOT NULL,
+   created_at DATETIME NOT NULL,
+   expires_at DATETIME NOT NULL,
+   PRIMARY KEY(id),
+   FOREIGN KEY(utilisateur_id) REFERENCES utilisateur(id_utilisateur)
+);
+
+
+ALTER TABLE tache ADD estimation FLOAT;
+ALTER TABLE historique_tache ADD COLUMN estimation FLOAT;
+
+CREATE TABLE notification (
+   id_notification INT AUTO_INCREMENT,
+   id_utilisateur INT NOT NULL,
+   type_notif VARCHAR(100) NOT NULL,
+   message TEXT NOT NULL,
+   date_creation DATETIME NOT NULL,
+   est_lue BOOLEAN DEFAULT FALSE,
+   PRIMARY KEY(id_notification),
+   FOREIGN KEY(id_utilisateur) REFERENCES utilisateur(id_utilisateur),
+   CHECK (type_notif IN ('mission', 'changement'))
+);
+
+
+alter table notification add column id_tache INT REFERENCES tache(id_tache);
+
+alter table tache_terminee add column commentaire text;
+alter table tache_terminee add column est_validee BOOLEAN;
+
+ALTER TABLE tache_terminee 
+ADD COLUMN justificatif VARCHAR(255); -- LONGBLO

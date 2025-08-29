@@ -22,7 +22,7 @@
                 padding-left: 0; /* Pas de padding sur mobile si le sidebar est un offcanvas */
             }
             .sidebar-fixed-desktop { /* Cache le sidebar fixe sur mobile */
-                display: none !important;
+                /* display: none !important; */
             }
         }
 
@@ -77,49 +77,56 @@
     {% block stylesheets %}{% endblock %}
 </head>
 <body>
+    <div class="row" >
+    <div class="col-md-1">
     {# Inclusion directe du Sidebar #}
     <div class="sidebar-fixed-desktop">
-        {% include 'components/sidebar.html.twig' %}
+        {% include 'components/sidebar.html.twig' with {'active': 'taches'} %}
     </div>
-
-    <main class="container-fluid py-4">
+    </div>
+    <div class="col-md-11">
+    <main class="container">
         <h1 class="mb-4 text-center">Liste des tâches</h1>
 
         {# Section des filtres - Sans fond de carte #}
         <div class="mb-4 px-3"> {# Ajout de padding horizontal pour l'alignement #}
             {# <h5 class="card-title mb-3 text-center">Filtres</h5> #}
-            <div class="row justify-content-center align-items-center g-3"> {# g-3 pour un espacement plus compact #}
-                <div class="col-md-3 col-sm-6">
-                    <select class="form-select shadow-sm" aria-label="Type d'activité">
-                        <option selected>Type d'activité</option>
-                        <option value="1">Activité A</option>
-                        <option value="2">Activité B</option>
-                        <option value="3">Activité C</option>
-                    </select>
+            <form action="/collaborateur/taches/activite/filtre" method="GET" >
+                <div class="row justify-content-center align-items-center g-3"> {# g-3 pour un espacement plus compact #}
+                    <div class="col-md-3 col-sm-6">
+                        <select class="form-select shadow-sm" aria-label="Type d'activité" name="id_activite">
+                            <option selected>Type activité</option>
+                            {% for activite in activites %}
+                                <option value="{{activite.id}}">{{activite.typeActivite}}</option>
+                            {% endfor %}
+                            {# <option value="2">Activité B</option>
+                            <option value="3">Activité C</option> #}
+                        </select>
+                    </div>
+                    {# <div class="col-md-3 col-sm-6">
+                        <select class="form-select shadow-sm" aria-label="Type de client">
+                            <option selected>Type de client</option>
+                            <option value="1">Client X</option>
+                            <option value="2">Client Y</option>
+                            <option value="3">Client Z</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3 col-sm-6">
+                        <select class="form-select shadow-sm" aria-label="Type de service">
+                            <option selected>Type de service</option>
+                            <option value="1">Service 1</option>
+                            <option value="2">Service 2</option>
+                            <option value="3">Service 3</option>
+                        </select>
+                    </div> #}
+                    <div class="col-md-auto col-sm-6"> {# col-md-auto pour que le bouton prenne juste la largeur nécessaire #}
+                        <input type="submit" class="btn btn-primary w-100" id="filterButton" value="Filtrer">
+                    </div>
                 </div>
-                <div class="col-md-3 col-sm-6">
-                    <select class="form-select shadow-sm" aria-label="Type de client">
-                        <option selected>Type de client</option>
-                        <option value="1">Client X</option>
-                        <option value="2">Client Y</option>
-                        <option value="3">Client Z</option>
-                    </select>
-                </div>
-                <div class="col-md-3 col-sm-6">
-                    <select class="form-select shadow-sm" aria-label="Type de service">
-                        <option selected>Type de service</option>
-                        <option value="1">Service 1</option>
-                        <option value="2">Service 2</option>
-                        <option value="3">Service 3</option>
-                    </select>
-                </div>
-                <div class="col-md-auto col-sm-6"> {# col-md-auto pour que le bouton prenne juste la largeur nécessaire #}
-                    <button type="button" class="btn btn-primary w-100" id="filterButton">Filtrer</button>
-                </div>
-            </div>
+            </form>
         </div>
 
-        <div class="row g-4">
+        <div class="container-fluid row g-4">
             {# Section du tableau des tâches dans une carte #}
             <div class="col-md-12">
                 <div class="card h-100">
@@ -137,7 +144,16 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr>
+                                    {% for tache in taches %}
+                                        <tr>
+                                            <td>{{tache.tache}}</td>
+                                            <td>{{ tache.dateEcheance|date('d/m/Y H:i') }}</td>
+                                            <td>Urgente</td>
+                                            <td>{{tache.estimation}}</td>
+                                            <td>{{tache.activite.activite}}</td>
+                                        </tr>
+                                    {% endfor %}
+                                    {# <tr>
                                         <td>Préparer rapport mensuel</td>
                                         <td>30/07/2025</td>
                                         <td>Urgente</td>
@@ -150,7 +166,7 @@
                                         <td>Urgente</td>
                                         <td>3</td>
                                         <td>Activité A</td>
-                                    </tr>
+                                    </tr> #}
                                     {# Ajoutez d'autres lignes de données ici si nécessaire #}
                                 </tbody>
                             </table>
@@ -163,7 +179,7 @@
         {# Ce bloc peut être rempli par les templates qui étendent ce layout #}
         {% block page_content %}{% endblock %}
     </main>
-
+    </div>
     <!-- Bootstrap JS CDN -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
     {% block javascripts %}{% endblock %}
@@ -188,5 +204,6 @@
             });
         });
     </script>
+    </div>
 </body>
 </html>

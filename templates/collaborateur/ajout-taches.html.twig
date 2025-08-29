@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{% block title %}Les tâches de l'activité{% endblock %}</title>
+
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" />
+
+  <style>
+    body {
+      padding-left: 280px;
+      background-color: #F5F5F5;
+      transition: padding-left 0.3s ease;
+    }
+    /* Sidebar fixe desktop */
+    .sidebar-fixed-desktop {
+      width: 280px;
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100vh;
+      background: linear-gradient(to bottom, #ffffffdc, #c8dbebff);
+      padding: 1rem;
+      z-index: 1050;
+      overflow-y: auto;
+    }
+    /* Cacher sidebar fixe sur mobile */
+    @media (max-width: 767.98px) {
+      body {
+        padding-left: 0;
+      }
+      .sidebar-fixed-desktop {
+        display: none !important;
+      }
+    }
+
+    .card {
+      border-radius: 12px;
+      border: 1px solid #e0e0e0;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    }
+
+    .table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-bottom: 0;
+      overflow: hidden;
+    }
+
+    .table thead th {
+      color: #555;
+      font-weight: 600;
+      padding: 0.8rem 1.2rem;
+      text-align: left;
+      border-bottom: 2px solid #e0e0e0;
+      text-transform: uppercase;
+      font-size: 0.85rem;
+      letter-spacing: 0.05em;
+      border-right: 1px solid #e0e0e0;
+    }
+
+    .table thead th:last-child {
+      border-right: none;
+    }
+
+    .table tbody td {
+      padding: 0.8rem 1.2rem;
+      vertical-align: middle;
+      border-bottom: 1px solid #eee;
+      border-right: 1px solid #eee;
+      color: #333;
+    }
+
+    .table tbody td:last-child {
+      border-right: none;
+    }
+
+    .table-hover tbody tr:hover {
+      background-color: #f8f9fa;
+      cursor: pointer;
+    }
+
+    .table tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    .text-center-buttons {
+      text-align: center;
+      vertical-align: middle;
+      width: 1%;
+      white-space: nowrap;
+    }
+
+    .btn-assign {
+      background-color: #0d6efd;
+      color: white;
+      border-radius: 6px;
+      padding: 0.6rem 1.2rem;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: background-color 0.2s ease, transform 0.1s ease;
+    }
+
+    .btn-assign:hover {
+      background-color: #0b5ed7;
+      transform: translateY(-1px);
+    }
+
+    .btn-assign:active {
+      transform: translateY(0);
+    }
+
+    .btn-icon {
+      padding: 0.5rem 0.75rem;
+      font-size: 1rem;
+      line-height: 1;
+    }
+
+    main.container-fluid {
+      margin-left: 280px;
+      width: calc(100% - 280px);
+      padding: 3rem 1rem 1rem 1rem;
+      transition: margin-left 0.3s ease, width 0.3s ease;
+    }
+
+    @media (max-width: 767.98px) {
+      main.container-fluid {
+        margin-left: 0;
+        width: 100%;
+        padding: 1rem 0.5rem 1rem 0.5rem;
+      }
+    }
+
+    /* Bouton menu mobile */
+    .mobile-menu-bar {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1100;
+      background: white;
+      padding: 0.75rem 1rem;
+      box-shadow: 0 2px 6px rgb(0 0 0 / 0.1);
+      align-items: center;
+      justify-content: space-between;
+    }
+    @media (max-width: 767.98px) {
+      .mobile-menu-bar {
+        display: flex;
+      }
+      main.container-fluid {
+        padding-top: 3.5rem; /* laisser la place au menu fixe */
+      }
+    }
+  </style>
+  {% block stylesheets %}{% endblock %}
+</head>
+<body>
+
+  <!-- Sidebar fixe desktop -->
+  <div class="sidebar-fixed-desktop">
+    {% include 'components/sidebar.html.twig' with {'active': 'activite'} %}
+  </div>
+
+  <!-- Barre menu mobile -->
+  <div class="mobile-menu-bar d-md-none">
+    <h5 class="mb-0">Menu</h5>
+    <button class="btn btn-outline-primary" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileSidebar" aria-label="Ouvrir le menu">
+      <i class="bi bi-list fs-4"></i>
+    </button>
+  </div>
+
+  <!-- Sidebar mobile offcanvas -->
+  <div class="offcanvas offcanvas-start" tabindex="-1" id="mobileSidebar" aria-labelledby="mobileSidebarLabel">
+    <div class="offcanvas-header">
+      <h5 id="mobileSidebarLabel" class="offcanvas-title">Menu</h5>
+      <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Fermer"></button>
+    </div>
+    <div class="offcanvas-body">
+      {% include 'components/sidebar-manager.html.twig' with {'active': 'activite'} %}
+    </div>
+  </div>
+
+  <!-- Contenu principal -->
+  <main class="container-fluid py-5">
+    <h1 class="mb-5 text-center">
+      <i class="bi bi-check2-square me-2"></i>
+      Les tâches de l'activité {{ app.session.has('activite').activite is defined ? activityId : '1' }}
+    </h1>
+
+    <div class="row justify-content-center">
+      <div class="col-md-11 col-lg-10">
+        <div class="card h-100">
+          <div class="card-body p-0">
+            <h5 class="card-title mb-3 px-4 pt-4 text-center">
+              <i class="bi bi-list-task me-2"></i>
+              Détails des tâches
+            </h5>
+            <div class="d-flex justify-content-end px-4 mb-3">
+              <a href="/collaborateur/tache/ajouter" class="btn btn-success">
+                <i class="bi bi-plus-circle me-1"></i> Ajouter une tâche
+              </a>
+            </div>
+            <div class="table-responsive">
+              <table class="table table-hover mb-0">
+                <thead>
+                  <tr>
+                    <th><i class="bi bi-file-earmark-text me-1"></i> Tâche</th>
+                    <th><i class="bi bi-calendar-event me-1"></i> Date d'échéance</th>
+                    <th class="text-center-buttons"><i class="bi bi-person-lines-fill me-1"></i> Collaborateur attribué</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% if taches is null or taches is empty %}
+                    <tr><td colspan="3" class="text-center">Aucune tâche</td></tr>
+                  {% else %}
+                    {% for tachee in taches %}
+                      <tr>
+                        <td>{{ tachee.tache }}</td>
+                        <td>{{ tachee.dateEcheance|date('d/m/Y H:i') }}</td>
+                        {# {% if tachee.utilisateur is not null %}
+                          <td class="text-center-buttons">
+                            <i class="bi bi-person-check text-success"></i> {{tachee.utilisateur.matricule}}
+                          </td>
+                        {% else %}
+                          <td class="text-center-buttons">
+                            <a href="/manager/collaborateurs?id_tache={{tachee.id}}" class="btn btn-assign btn-icon" title="Attribuer">
+                              <i class="bi bi-person-plus"></i>
+                            </a>
+                          </td>
+                        {% endif %} #}
+                      </tr>
+                    {% endfor %}
+                  {% endif %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {% block page_content %}{% endblock %}
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  {% block javascripts %}{% endblock %}
+
+  <script>
+    // document.addEventListener('DOMContentLoaded', function() {
+    //   document.querySelectorAll('.btn-assign').forEach(button => {
+    //     button.addEventListener('click', function() {
+    //       const taskId = this.dataset.taskId;
+    //       console.log(`Bouton 'Attribuer' cliqué pour la tâche ID: ${taskId}`);
+    //       // Redirection ou ouverture modal ici
+    //     });
+    //   });
+    // });
+  </script>
+</body>
+</html>

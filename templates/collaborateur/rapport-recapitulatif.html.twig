@@ -20,7 +20,7 @@
                 padding-left: 0; /* Pas de padding sur mobile si le sidebar est un offcanvas */
             }
             .sidebar-fixed-desktop { /* Cache le sidebar fixe sur mobile */
-                display: none !important;
+                /* display: none !important; */
             }
         }
 
@@ -98,38 +98,40 @@
 </head>
 <body>
     {# Inclusion directe du Sidebar #}
-    <div class="sidebar-fixed-desktop">
-        {% include 'components/sidebar.html.twig' %}
+    <div class="sidebar-fixed-desktop col-md-4">
+        {% include 'components/sidebar.html.twig' with {'active': 'rapports'} %}
     </div>
 
-    <main class="container-fluid py-5"> {# Augmentation du padding vertical pour la page #}
+    <main class="container-fluid py-5 col-md-8"> {# Augmentation du padding vertical pour la page #}
         <h1 class="mb-5 text-center">Rapport et récapitulatif d'activité</h1> {# Marge plus grande sous le titre #}
 
         {# Section des filtres #}
         <div class="row g-3 mb-5 align-items-center justify-content-center filter-row-responsive"> {# g-3 pour un espacement plus compact, justify-content-center pour centrer #}
-            <div class="col-auto">
-                <label for="startDate" class="visually-hidden">Date de début</label>
-                <input type="date" class="form-control shadow-sm" id="startDate">
-            </div>
-            <div class="col-auto d-flex align-items-center">
-                <span class="text-muted">à</span>
-            </div>
-            <div class="col-auto">
-                <label for="endDate" class="visually-hidden">Date de fin</label>
-                <input type="date" class="form-control shadow-sm" id="endDate">
-            </div>
-            <div class="col-auto">
-                <label for="activityType" class="visually-hidden">Type d'activité</label>
-                <select class="form-select shadow-sm" id="activityType" aria-label="Type d'activité">
-                    <option selected>Type d'activité</option>
-                    <option value="1">Activité A</option>
-                    <option value="2">Activité B</option>
-                    <option value="3">Activité C</option>
-                </select>
-            </div>
-            <div class="col-auto"> {# Plus besoin de ms-auto si on centre le row #}
-                <button type="button" class="btn btn-primary" id="filterButton">Filtrer</button>
-            </div>
+            <form action="/collaborateur/rapport" method="GET">
+                <div class="col-auto">
+                    <label for="startDate" class="visually-hidden">Date de début</label>
+                    <input type="date" class="form-control shadow-sm" id="startDate" name="debut" >
+                </div>
+                <div class="col-auto d-flex align-items-center">
+                    <span class="text-muted">à</span>
+                </div>
+                <div class="col-auto">
+                    <label for="endDate" class="visually-hidden">Date de fin</label>
+                    <input type="date" class="form-control shadow-sm" id="endDate" name="fin" >
+                </div>
+                {# <div class="col-auto">
+                    <label for="activityType" class="visually-hidden">Type d'activité</label>
+                    <select class="form-select shadow-sm" id="activityType" aria-label="Type d'activité">
+                        <option selected>Type d'activité</option>
+                        <option value="1">Activité A</option>
+                        <option value="2">Activité B</option>
+                        <option value="3">Activité C</option>
+                    </select>
+                </div> #}
+                <div class="col-auto"> {# Plus besoin de ms-auto si on centre le row #}
+                    <button type="submit" class="btn btn-primary" id="filterButton">Voir</button>
+                </div>
+            </form>
         </div>
 
         <div class="row g-4">
@@ -143,57 +145,62 @@
                                 <thead>
                                     <tr>
                                         <th scope="col" class="table-header-gray">Date</th>
-                                        <th scope="col" class="table-header-gray">Activité</th>
+                                        <th scope="col" class="table-header-gray">Tache</th>
+                                        <th scope="col" class="table-header-gray">Activité du tache</th>
                                         <th scope="col" class="table-header-gray col-duree">Durée</th>
                                         <th scope="col" class="table-header-gray">Commentaire</th>
+                                        <th scope="col" class="table-header-gray">Justificatif</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {# Groupe du 24-07-2025 #}
-                                    <tr>
-                                        <td class="align-middle">24-07-2025</td>
-                                        <td class="align-middle">Activité 1</td>
-                                        <td class="align-middle col-duree">2</td>
-                                        <td class="align-middle">Commentaire 1</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="align-middle"></td> {# Cellule vide pour la date #}
-                                        <td class="align-middle">Activité 2</td>
-                                        <td class="align-middle col-duree">1</td>
-                                        <td class="align-middle">Commentaire 2</td>
-                                    </tr>
-                                    <tr class="table-total-row">
-                                        <td colspan="2" class="text-end">total</td>
-                                        <td class="align-middle">3</td>
-                                        <td class="align-middle"></td> {# Cellule vide pour le commentaire #}
-                                    </tr>
+                                    {% for groupe in taches.details %}
+                                        {# Première ligne avec la date #}
+                                        {% for tache in groupe.tache_terminee %}
+                                            <tr>
+                                                {% if loop.first %}
+                                                    <td class="align-middle">{{ groupe.date }}</td>
+                                                {% else %}
+                                                    <td class="align-middle"></td>
+                                                {% endif %}
+                                                <td class="align-middle">{{ tache.tache.tache }}</td>
+                                                <td class="align-middle">{{ tache.tache.activite.activite }}</td>
+                                                <td class="align-middle col-duree">{{ tache.tempsPasse }}</td>
+                                                <td class="align-middle">{{ tache.commentaire }}</td>
+                                                <td class="align-middle">
+                                                    {% if tache.getJustificatif() %}
+                                                        {# <a ="{{ path('api_tache_justificatif', { id: tache.id }) }}" 
+                                                        class="btn btn-sm btn-outline-primary btn-download">
+                                                        Télécharger {{tache.justificatif}}
+                                                        </a>href #}
+                                                        <button type="button" 
+                                                                class="btn btn-sm btn-outline-primary btn-download" 
+                                                                data-url="{{ path('api_tache_justificatif', { id: tache.id }) }}" 
+                                                                data-filename="{{ tache.justificatif }}">
+                                                            Télécharger
+                                                        </button>
+                                                    {% else %}
+                                                        <span class="text-muted">Aucun</span>
+                                                    {% endif %}
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
 
-                                    {# Groupe du 25-07-2025 #}
-                                    <tr>
-                                        <td class="align-middle">25-07-2025</td>
-                                        <td class="align-middle">Activité 1</td>
-                                        <td class="align-middle col-duree">4</td>
-                                        <td class="align-middle">Commentaire 3</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="align-middle"></td> {# Cellule vide pour la date #}
-                                        <td class="align-middle">Activité 3</td>
-                                        <td class="align-middle col-duree">1</td>
-                                        <td class="align-middle">Commentaire 4</td>
-                                    </tr>
-                                    <tr class="table-total-row">
-                                        <td colspan="2" class="text-end">total</td>
-                                        <td class="align-middle">5</td>
-                                        <td class="align-middle"></td> {# Cellule vide pour le commentaire #}
-                                    </tr>
+                                        {# Ligne de total par jour #}
+                                        <tr class="table-total-row">
+                                            <td colspan="2" class="text-end">Total</td>
+                                            <td class="align-middle">{{ groupe.total_duree }}</td>
+                                            <td colspan="2"></td>
+                                        </tr>
+                                    {% endfor %}
 
-                                    {# Total semaine #}
+                                    {# Ligne total semaine #}
                                     <tr class="table-total-row">
                                         <td colspan="2" class="text-end">Total semaine</td>
-                                        <td class="align-middle">9</td>
-                                        <td class="align-middle"></td> {# Cellule vide pour le commentaire #}
+                                        <td class="align-middle">{{ taches.total }}</td>
+                                        <td colspan="2"></td>
                                     </tr>
                                 </tbody>
+
                             </table>
                         </div>
                     </div>
@@ -203,7 +210,8 @@
 
         <div class="row mt-5"> {# Marge plus grande au-dessus du bouton Exporter #}
             <div class="col-12 text-center">
-                <button type="button" class="btn btn-secondary" id="exportButton">Exporter</button>
+                <button type="button" class="btn btn-secondary" id="exportButton">Exporter-pdf</button>
+                <button type="button" class="btn btn-primary" id="exportButton_excel">Exporter-excel</button>
             </div>
         </div>
 
@@ -215,31 +223,96 @@
     {% block javascripts %}{% endblock %}
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const filterButton = document.getElementById('filterButton');
-            const exportButton = document.getElementById('exportButton');
+        // document.addEventListener('DOMContentLoaded', function() {
+        //     const filterButton = document.getElementById('filterButton');
+        //     const exportButton = document.getElementById('exportButton');
 
-            filterButton.addEventListener('click', function() {
-                const startDate = document.getElementById('startDate').value;
-                const endDate = document.getElementById('endDate').value;
-                const activityType = document.getElementById('activityType').value;
+        //     filterButton.addEventListener('click', function() {
+        //         const startDate = document.getElementById('startDate').value;
+        //         const endDate = document.getElementById('endDate').value;
+        //         const activityType = document.getElementById('activityType').value;
 
-                console.log('Filtrage déclenché avec les valeurs :');
-                console.log('Date de début:', startDate);
-                console.log('Date de fin:', endDate);
-                console.log('Type d\'activité:', activityType);
+        //         console.log('Filtrage déclenché avec les valeurs :');
+        //         console.log('Date de début:', startDate);
+        //         console.log('Date de fin:', endDate);
+        //         console.log('Type d\'activité:', activityType);
 
-                // Ici, vous intégrerez votre logique de filtrage réelle.
-                // Par exemple, une requête Fetch API vers votre backend Symfony
-                // pour récupérer les données filtrées et mettre à jour le tableau.
-            });
+        //         // Ici, vous intégrerez votre logique de filtrage réelle.
+        //         // Par exemple, une requête Fetch API vers votre backend Symfony
+        //         // pour récupérer les données filtrées et mettre à jour le tableau.
+        //     });
 
-            exportButton.addEventListener('click', function() {
-                console.log('Bouton Exporter cliqué.');
-                // Ici, vous intégrerez votre logique d'exportation.
-                // Par exemple, générer un fichier CSV ou PDF à partir des données du tableau.
-            });
-        });
+        //     exportButton.addEventListener('click', function() {
+        //         console.log('Bouton Exporter cliqué.');
+        //         // Ici, vous intégrerez votre logique d'exportation.
+        //         // Par exemple, générer un fichier CSV ou PDF à partir des données du tableau.
+        //     });
+        // });
+
+document.querySelectorAll('.btn-download').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const url = this.dataset.url;
+        const filename = this.dataset.filename || 'justificatif';
+
+        fetch(url)
+            .then(resp => {
+                if (!resp.ok) throw new Error('Aucun justificatif trouvé.');
+                return resp.blob();
+            })
+            .then(blob => {
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = filename; // Nom réel du fichier
+                document.body.appendChild(link); // Nécessaire pour Firefox
+                link.click();
+                link.remove();
+                URL.revokeObjectURL(link.href);
+            })
+            .catch(err => alert(err.message));
+    });
+});
+
+let debut = {{ debut|json_encode|default('null')|raw }};
+let fin   = {{ fin|json_encode|default('null')|raw }};
+
+const urlPdf   = "{{ path('rapport_export_pdf') }}?debut=" + (debut !== null ? encodeURIComponent(debut) : 'null') + "&fin=" + (fin !== null ? encodeURIComponent(fin) : 'null');
+const urlExcel = "{{ path('rapport_export_excel') }}?debut=" + (debut !== null ? encodeURIComponent(debut) : 'null') + "&fin=" + (fin !== null ? encodeURIComponent(fin) : 'null');
+
+document.getElementById('exportButton').addEventListener('click', function () {
+    fetch(urlPdf)
+        .then(resp => {
+            if (!resp.ok) throw new Error("Erreur lors de la génération du PDF.");
+            return resp.blob();
+        })
+        .then(blob => {
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = "rapport.pdf";
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            URL.revokeObjectURL(link.href);
+        })
+        .catch(err => alert(err.message));
+});
+
+document.getElementById('exportButton_excel').addEventListener('click', function () {
+    fetch(urlExcel)
+        .then(resp => {
+            if (!resp.ok) throw new Error("Erreur lors de la génération du fichier Excel.");
+            return resp.blob();
+        })
+        .then(blob => {
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = "rapport.xlsx";
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            URL.revokeObjectURL(link.href);
+        })
+        .catch(err => alert(err.message));
+});
     </script>
 </body>
 </html>

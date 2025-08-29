@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Planning multi-jours</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <style>
+        body { padding-left: 280px; background-color: #F5F5F5; }
+        .card { border-radius: 12px; border: 1px solid #e0e0e0; box-shadow: 0 8px 25px rgba(0,0,0,0.1); margin-bottom: 1.5rem; }
+        @media (max-width: 767.98px) { body { padding-left: 0; } }
+    </style>
+</head>
+<body>
+    <div class="row">
+        <div class="col-md-1">
+            <div class="sidebar-fixed-desktop">
+                {% include 'components/sidebar.html.twig' with {'active': 'planning'} %}
+            </div>
+        </div>
+        <div class="col-md-11">
+            <main class="container">
+                <h1 class="mb-4 text-center">Planning</h1>
+
+                <!-- Formulaire de filtre date1 à date2 -->
+                <div class="mb-4 px-3">
+                    <form method="get" action="{{ path('planning_semaine_collab') }}">
+
+                        <div class="row justify-content-center align-items-end g-2">
+                            <div class="col-auto">
+                                <label for="dateStart" class="form-label visually-hidden">Date début</label>
+                                <input type="date" id="dateStart" class="form-control shadow-sm" placeholder="Date début" name="start">
+                            </div>
+
+                            <div class="col-auto d-flex align-items-center">
+                                <span>à</span>
+                            </div>
+
+                            <div class="col-auto">
+                                <label for="dateEnd" class="form-label visually-hidden">Date fin</label>
+                                <input type="date" id="dateEnd" class="form-control shadow-sm" placeholder="Date fin" name="end">
+                            </div>
+
+                            <div class="col-auto">
+                                <input type="submit" class="btn btn-primary" id="filterButton" value="Filtrer">
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+<div class="container-fluid">
+    <div class="accordion" id="planningAccordion">
+        {% for jour in planning %}
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="heading{{ loop.index }}">
+                    <button class="accordion-button {% if loop.first == false %}collapsed{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ loop.index }}" aria-expanded="{% if loop.first %}true{% else %}false{% endif %}" aria-controls="collapse{{ loop.index }}">
+                        <strong>{{ jour.date|date('d/m/Y') }}</strong> - {{ jour.nb_taches }} tâche(s)
+                    </button>
+                </h2>
+                <div id="collapse{{ loop.index }}" class="accordion-collapse collapse {% if loop.first %}show{% endif %}" aria-labelledby="heading{{ loop.index }}" data-bs-parent="#planningAccordion">
+                    <div class="accordion-body p-0">
+                        <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Libellé</th>
+                                        <th>Début</th>
+                                        <th>Échéance</th>
+                                        <th>Temps d'estimation</th>
+                                        <th>Activité</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for tache in jour.taches %}
+                                        <tr>
+                                            <td>{{ tache.tache }}</td>
+                                            <td>{{ tache.debut|date('d/m/Y H:i') }}</td>
+                                            <td>{{ tache.dateEcheance|date('d/m/Y H:i') }}</td>
+                                            <td>{{ tache.estimation }}</td>
+                                            <td>{{ tache.activite.activite }}</td>
+                                            <td>
+                                                <a href="/collaborateur/replanifier/tache/{{tache.id}}">
+                                                    <button class="btn btn-sm btn-warning replanifier-btn">
+                                                        <i class="bi bi-pencil-square"></i> Replanifier
+                                                    </button>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    {% else %}
+                                        <tr>
+                                            <td colspan="5" class="text-center text-muted">Aucune tâche pour ce jour</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+            </main>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // document.addEventListener('DOMContentLoaded', function() {
+        //     const filterButton = document.getElementById('filterButton');
+
+        //     filterButton.addEventListener('click', function() {
+        //         const dateStart = document.getElementById('dateStart').value;
+        //         const dateEnd = document.getElementById('dateEnd').value;
+
+        //         if (!dateStart || !dateEnd) {
+        //             alert('Veuillez sélectionner les deux dates.');
+        //             return;
+        //         }
+
+        //         // Redirection vers le backend Symfony avec les paramètres de date
+        //         window.location.href = `/planning?start=${dateStart}&end=${dateEnd}`;
+        //     });
+        // });
+    </script>
+</body>
+</html>

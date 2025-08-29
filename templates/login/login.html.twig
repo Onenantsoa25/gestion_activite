@@ -46,14 +46,20 @@
                         <h2 class="fs-5 fw-semibold text-primary">BANKY FOIBEN'I MADAGASIKARA</h2>
                     </div>
 
-                    <form class="w-100" style="max-width: 350px;">
+                    <form method="post" action="{{ path('app_login') }}" class="w-100" style="max-width: 350px;">
+                        {% if error %}
+                            <div class="alert alert-danger">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
+                        {% endif %}
+                        
+                        <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+                        
                         <div class="mb-4">
                             <label for="matricule" class="form-label text-secondary">Matricule</label>
-                            <input type="text" class="form-control form-control-bottom-border" id="matricule" placeholder="Matricule">
+                            <input type="text" class="form-control form-control-bottom-border" id="matricule" name="matricule" value="{{ last_username }}" placeholder="Matricule" required autofocus>
                         </div>
                         <div class="mb-4">
                             <label for="password" class="form-label text-secondary">Mot de passe</label>
-                            <input type="password" class="form-control form-control-bottom-border" id="password" placeholder="Mot de passe">
+                            <input type="password" class="form-control form-control-bottom-border" id="password" name="password" placeholder="Mot de passe" required>
                         </div>
                         <button type="submit" class="btn btn-primary w-100 fw-bold py-3 rounded-pill mt-4">
                             Se connecter

@@ -20,7 +20,7 @@
                 padding-left: 0; /* Pas de padding sur mobile si le sidebar est un offcanvas */
             }
             .sidebar-fixed-desktop { /* Cache le sidebar fixe sur mobile */
-                display: none !important;
+                /* display: none !important; */
             }
         }
 
@@ -106,7 +106,7 @@
 <body>
     {# Inclusion directe du Sidebar #}
     <div class="sidebar-fixed-desktop">
-        {% include 'components/sidebar.html.twig' %}
+        {% include 'components/sidebar-manager.html.twig' %}
     </div>
 
     <main class="container-fluid py-5">

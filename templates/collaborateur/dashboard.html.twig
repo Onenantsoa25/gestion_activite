@@ -1,85 +1,171 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tableau de bord collaborateur</title>
-    <!-- Bootstrap CSS CDN -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
-    <!-- Bootstrap Icons CDN (IMPORTANT pour les icônes du sidebar) -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-    <!-- Chart.js CDN pour les diagrammes -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <style>
-        /* Styles pour le corps et le padding pour le sidebar */
-        body {
-            padding-left: 280px; /* Largeur du sidebar */
-            background-color: #F5F5F5; /* Nouvelle couleur de fond gris très doux pour le contenu principal */
-        }
-        /* Pour la responsivité sur mobile, vous pourriez vouloir cacher le sidebar fixe et utiliser un offcanvas */
-        @media (max-width: 767.98px) { /* Moins de 768px (taille md de Bootstrap) */
-            body {
-                padding-left: 0; /* Pas de padding sur mobile si le sidebar est un offcanvas */
-            }
-            .sidebar-fixed-desktop { /* Cache le sidebar fixe sur mobile */
-                display: none !important;
-            }
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  
+  <title>{% block title %}Tableau de bord des activités{% endblock %}</title>
 
-        /* Styles pour les cartes du tableau de bord */
-        .card {
-            border-radius: 12px; /* Bords plus arrondis */
-            border: 1px solid #e0e0e0; /* Bordure subtile */
-            /* Ombre plus prononcée mais toujours douce pour un effet "très moderne" et flottant */
-            box-shadow: 0 8px 25px rgba(0,0,0,0.1); /* Augmentation du flou et de l'opacité */
-        }
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
-        /* Styles pour simuler le graphique en camembert */
-        .pie-chart-container {
-            position: relative;
-            width: 200px; /* Taille du graphique */
-            height: 200px;
-            border-radius: 50%;
-            background: conic-gradient(
-                #0d6efd 0% 25%, /* Bleu pour 'en cours' (25%) */
-                #dc3545 25% 35%, /* Rouge pour 'à faire' (10%) */
-                #198754 35% 100% /* Vert pour 'terminé' (65%) */
-            );
-            margin: 0 auto; /* Centrer le graphique */
-        }
+  <style>
+    body {
+      padding-left: 280px;
+      background-color: #F5F5F5;
+      transition: padding-left 0.3s ease;
+    }
 
-        .pie-chart-legend {
-            list-style: none;
-            padding: 0;
-            margin-top: 1rem;
-        }
-        .pie-chart-legend li {
-            display: flex;
-            align-items: center;
-            margin-bottom: 0.5rem;
-        }
-        .pie-chart-legend .color-box {
-            width: 15px;
-            height: 15px;
-            margin-right: 0.5rem;
-            border-radius: 3px;
-        }
-        .color-box.blue { background-color: #0d6efd; }
-        .color-box.red { background-color: #dc3545; }
-        .color-box.green { background-color: #198754; }
+    /* Sidebar fixe sur desktop */
+    .sidebar-fixed-desktop {
+      width: 280px;
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100vh;
+      background: linear-gradient(to bottom, #ffffffdc, #c8dbebff);
+      padding: 1rem;
+      z-index: 1050;
+      overflow-y: auto;
+    }
 
-        /* Styles pour la ligne verticale dans "Temps passé" */
-        .vertical-divider {
-            border-left: 1px solid #dee2e6; /* Couleur de bordure Bootstrap */
-            height: 60px; /* Hauteur de la ligne */
-            margin: 0 1.5rem;
-        }
-    </style>
+    /* Cacher le sidebar fixe sur mobile */
+    @media (max-width: 767.98px) {
+      body {
+        padding-left: 0;
+      }
+      .sidebar-fixed-desktop {
+        display: none;
+      }
+    }
+
+    /* Styles pour les cartes */
+    .card {
+      border-radius: 12px;
+      border: 1px solid #e0e0e0;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    }
+
+    /* Graphique camembert simulé */
+    .pie-chart-container {
+      position: relative;
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      background: conic-gradient(
+        #0d6efd 0% 25%,
+        #dc3545 25% 35%,
+        #198754 35% 100%
+      );
+      margin: 0 auto;
+    }
+
+    .pie-chart-legend {
+      list-style: none;
+      padding: 0;
+      margin-top: 1rem;
+    }
+    .pie-chart-legend li {
+      display: flex;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+    .pie-chart-legend .color-box {
+      width: 15px;
+      height: 15px;
+      margin-right: 0.5rem;
+      border-radius: 3px;
+    }
+    .color-box.blue { background-color: #0d6efd; }
+    .color-box.red { background-color: #dc3545; }
+    .color-box.green { background-color: #198754; }
+
+    .vertical-divider {
+      border-left: 1px solid #dee2e6;
+      height: 60px;
+      margin: 0 1.5rem;
+    }
+
+    .activity-tasks-list .activity-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+    .activity-tasks-list .activity-name {
+      flex-basis: 120px;
+      flex-shrink: 0;
+      font-weight: 500;
+      color: #343a40;
+    }
+    .activity-tasks-list .bar-wrapper {
+      flex-grow: 1;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      background-color: transparent;
+      height: 15px;
+    }
+    .activity-tasks-list .activity-bar {
+      height: 100%;
+      background-color: #0d6efd;
+      border-radius: 0.25rem;
+      min-width: 10px;
+    }
+    .activity-tasks-list .task-count {
+      font-weight: 600;
+      color: #343a40;
+      min-width: 80px;
+      text-align: right;
+    }
+
+    main.container-fluid {
+      margin-left: 280px;
+      width: calc(100% - 280px);
+      padding: 1rem;
+      transition: margin-left 0.3s ease, width 0.3s ease;
+    }
+
+    @media (max-width: 767.98px) {
+      main.container-fluid {
+        margin-left: 0;
+        width: 100%;
+        padding: 1rem 0.5rem;
+      }
+    }
+
+    /* Bouton menu mobile */
+    .mobile-menu-bar {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1100;
+      background: white;
+      padding: 0.75rem 1rem;
+      box-shadow: 0 2px 6px rgb(0 0 0 / 0.1);
+      align-items: center;
+      justify-content: space-between;
+    }
+    @media (max-width: 767.98px) {
+      .mobile-menu-bar {
+        display: flex;
+      }
+    }
+
+    #tasksPieChart {
+      max-width: 350px;
+      max-height: 350px;
+    }
+  </style>
+  {% block stylesheets %}{% endblock %}
 </head>
 <body>
     {# Inclusion du Sidebar - Le fichier templates/components/sidebar.html.twig doit exister #}
     <div class="sidebar-fixed-desktop">
-        {% include 'components/sidebar.html.twig' %}
+        {% include 'components/sidebar.html.twig' with {'active': 'dashboard'} %}
     </div>
 
     <main class="container-fluid py-4">
@@ -89,15 +175,17 @@
             {# Section Tâches #}
             <div class="col-md-6"> {# Prend la moitié de la largeur sur les écrans moyens et plus #}
                 <div class="card h-100">
-                    <div class="card-body text-center">
-                        <h5 class="card-title mb-4">Tâches</h5>
-                        <div class="pie-chart-container mb-4"></div>
-                        <ul class="pie-chart-legend">
-                            <li><span class="color-box blue"></span> En cours</li>
-                            <li><span class="color-box red"></span> À faire</li>
-                            <li><span class="color-box green"></span> Terminé</li>
-                        </ul>
-                    </div>
+                  <div class="card-body text-center">
+                      <h5 class="card-title mb-4">Tâches</h5>
+                      <div class="d-flex justify-content-center">
+                          <canvas id="tasksPieChart" width="1" height="1"></canvas>
+                      </div>
+                      <ul class="pie-chart-legend mt-3">
+                          <li><span class="color-box blue"></span> En cours</li>
+                          <li><span class="color-box red"></span> À faire</li>
+                          <li><span class="color-box green"></span> Terminé</li>
+                      </ul>
+                  </div>
                 </div>
             </div>
 
@@ -109,12 +197,12 @@
                         <div class="d-flex align-items-center">
                             <div class="text-center me-4">
                                 <p class="mb-0 text-secondary fw-semibold">Jour</p>
-                                <h3 class="fw-bold">48h</h3>
+                                <h3 class="fw-bold" id="temps_jour">48h</h3>
                             </div>
                             <div class="vertical-divider"></div>
                             <div class="text-center ms-4">
                                 <p class="mb-0 text-secondary fw-semibold">Semaine</p>
-                                <h3 class="fw-bold">54h</h3>
+                                <h3 class="fw-bold" id="temps_semaine">54h</h3>
                             </div>
                         </div>
                     </div>
@@ -141,60 +229,152 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const ctx = document.getElementById('workloadChart');
+        // document.addEventListener('DOMContentLoaded', function() {
+        //     const ctx = document.getElementById('workloadChart');
 
-            new Chart(ctx, {
-                type: 'bar', // Changé de 'line' à 'bar'
-                data: {
-                    labels: ['04-08-2025', '05-08-2025', '06-08-2025', '07-08-2025', '08-08-2025'], // Dates sur l'axe X
-                    datasets: [{
-                        label: 'Nombre de tâches',
-                        data: [8, 5, 10, 12, 9], // Nombre de tâches sur l'axe Y
-                        backgroundColor: '#0178d9ff', // Couleur des barres (bleu clair)
-                        borderColor: '#1065abff', // Bordure des barres
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false, // Permet de contrôler la hauteur via CSS
-                    plugins: {
-                        legend: {
-                            display: false // Ne pas afficher la légende du dataset
-                        },
-                        tooltip: {
-                            mode: 'index',
-                            intersect: false,
-                        }
-                    },
-                    scales: {
-                        x: {
-                            title: {
-                                display: true,
-                                text: 'Date'
-                            },
-                            grid: {
-                                display: false // Masquer les lignes de grille verticales
-                            }
-                        },
-                        y: {
-                            title: {
-                                display: true,
-                                text: 'Nombre de tâches'
-                            },
-                            beginAtZero: true, // Commencer l'axe Y à zéro
-                            ticks: {
-                                precision: 0 // Afficher des nombres entiers pour les tâches
-                            },
-                            grid: {
-                                color: '#e0e0e0' // Couleur des lignes de grille horizontales
-                            }
-                        }
+        //     new Chart(ctx, {
+        //         type: 'bar', // Changé de 'line' à 'bar'
+        //         data: {
+        //             labels: ['04-08-2025', '05-08-2025', '06-08-2025', '07-08-2025', '08-08-2025'], // Dates sur l'axe X
+        //             datasets: [{
+        //                 label: 'Nombre de tâches',
+        //                 data: [8, 5, 10, 12, 9], // Nombre de tâches sur l'axe Y
+        //                 backgroundColor: '#0178d9ff', // Couleur des barres (bleu clair)
+        //                 borderColor: '#1065abff', // Bordure des barres
+        //                 borderWidth: 1
+        //             }]
+        //         },
+        //         options: {
+        //             responsive: true,
+        //             maintainAspectRatio: false, // Permet de contrôler la hauteur via CSS
+        //             plugins: {
+        //                 legend: {
+        //                     display: false // Ne pas afficher la légende du dataset
+        //                 },
+        //                 tooltip: {
+        //                     mode: 'index',
+        //                     intersect: false,
+        //                 }
+        //             },
+        //             scales: {
+        //                 x: {
+        //                     title: {
+        //                         display: true,
+        //                         text: 'Date'
+        //                     },
+        //                     grid: {
+        //                         display: false // Masquer les lignes de grille verticales
+        //                     }
+        //                 },
+        //                 y: {
+        //                     title: {
+        //                         display: true,
+        //                         text: 'Nombre de tâches'
+        //                     },
+        //                     beginAtZero: true, // Commencer l'axe Y à zéro
+        //                     ticks: {
+        //                         precision: 0 // Afficher des nombres entiers pour les tâches
+        //                     },
+        //                     grid: {
+        //                         color: '#e0e0e0' // Couleur des lignes de grille horizontales
+        //                     }
+        //                 }
+        //             }
+        //         }
+        //     });
+        // });
+    </script>
+<script>
+document.addEventListener('DOMContentLoaded', async function () {
+    try {
+        const response = await fetch('/api/collaborateur/dashboard');
+        if (!response.ok) {
+            throw new Error("Erreur lors de la récupération des données");
+        }
+        const data = await response.json();
+
+        // Mettre à jour temps passé
+        document.getElementById('temps_jour').textContent = data.jours + "h";
+        document.getElementById('temps_semaine').textContent = data.semaine + "h";
+
+        // Construire le camembert
+        const ctxPie = document.getElementById('tasksPieChart');
+        new Chart(ctxPie, {
+            type: 'pie',
+            data: {
+                labels: ['En cours', 'À faire', 'Terminé'],
+                datasets: [{
+                    data: [data.encours, data.afaire, data.nonTermine], 
+                    backgroundColor: ['#0d6efd', '#dc3545', '#198754'],
+                    borderWidth: 1,
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false },
+                }
+            }
+        });
+
+        // Construire le graphique bar (charge de travail)
+        const ctxBar = document.getElementById('workloadChart');
+
+        // if (workloadChart) {
+        //     workloadChart.destroy();
+        // }
+
+        // // Transformer les données pour Chart.js
+        // const labels = data.charges.map(item => {
+        //     // Récupérer la date au format 'd-m-Y'
+        //     const d = new Date(item.dates[0]); // ou item.dates[i] selon ton API
+        //     return `${d.getDate().toString().padStart(2,'0')}-${(d.getMonth()+1).toString().padStart(2,'0')}-${d.getFullYear()}`;
+        // });
+
+        // const chargesValues = data.charges.map(item => item.charges);
+
+// Transformer les données pour Chart.js
+        const labels = data.charges.map(item => {
+            const d = new Date(item.date);
+            return `${d.getDate().toString().padStart(2,'0')}-${(d.getMonth()+1).toString().padStart(2,'0')}-${d.getFullYear()}`;
+        });
+
+        const chargesValues = data.charges.map(item => item.charges);
+
+        new Chart(ctxBar, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Nombre de tâches',
+                    data: chargesValues,
+                    backgroundColor: '#0178d9ff',
+                    borderColor: '#1065abff',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { title: { display: true, text: 'Date' }, grid: { display: false } },
+                    y: { 
+                        title: { display: true, text: 'Nombre de tâches' },
+                        beginAtZero: true,
+                        ticks: { precision: 0 },
+                        grid: { color: '#e0e0e0' }
                     }
                 }
-            });
+            }
         });
-    </script>
+
+    } catch (error) {
+        console.error("Impossible de charger le tableau de bord :", error);
+    }
+});
+
+</script>
+
 </body>
 </html>

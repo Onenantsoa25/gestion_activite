@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Replanification{% endblock %}</title>
+    <!-- Bootstrap CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
+    <!-- Bootstrap Icons CDN (IMPORTANT pour les icônes du sidebar) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <style>
+        /* Styles pour le corps et le padding pour le sidebar */
+        body {
+            padding-left: 280px; /* Largeur du sidebar */
+            background-color: #F5F5F5; /* Couleur de fond gris très doux pour le contenu principal */
+        }
+        /* Pour la responsivité sur mobile, vous pourriez vouloir cacher le sidebar fixe et utiliser un offcanvas */
+        @media (max-width: 767.98px) { /* Moins de 768px (taille md de Bootstrap) */
+            body {
+                padding-left: 0; /* Pas de padding sur mobile si le sidebar est un offcanvas */
+            }
+            .sidebar-fixed-desktop { /* Cache le sidebar fixe sur mobile */
+                /* display: none !important; */
+            }
+        }
+
+        /* Styles pour les cartes */
+        .card {
+            border-radius: 12px; /* Bords plus arrondis */
+            border: 1px solid #e0e0e0; /* Bordure subtile */
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08); /* Ombre plus douce et moderne */
+        }
+
+        /* Styles pour les labels de formulaire */
+        .form-label {
+            font-weight: 500; /* Rendre les labels un peu plus gras */
+            color: #343a40; /* Couleur de texte foncée */
+            margin-bottom: 0.5rem; /* Espacement sous le label */
+        }
+
+        /* Styles pour les inputs */
+        .form-control, .form-select {
+            border-radius: 8px; /* Bords arrondis pour les inputs */
+            border: 1px solid #ced4da; /* Bordure standard */
+            padding: 0.75rem 1rem; /* Padding confortable */
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.05); /* Ombre interne subtile */
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: #80bdff; /* Couleur de focus Bootstrap */
+            box-shadow: 0 0 0 0.25rem rgba(13,110,253,.25); /* Ombre de focus Bootstrap */
+        }
+
+        /* Styles pour les informations statiques */
+        .info-display {
+            background-color: #f8f9fa; /* Fond légèrement grisé */
+            border: 1px solid #e9ecef; /* Bordure subtile */
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            font-weight: 500;
+            color: #495057;
+            margin-bottom: 1rem; /* Espacement sous chaque info */
+        }
+        .info-label {
+            font-size: 0.875rem; /* Taille de police plus petite pour le label */
+            color: #6c757d; /* Couleur de texte plus douce */
+            margin-bottom: 0.25rem; /* Espacement réduit sous le label */
+            display: block; /* Pour que le label prenne sa propre ligne */
+        }
+        .info-value {
+            font-size: 1rem; /* Taille de police standard pour la valeur */
+            color: #343a40; /* Couleur de texte plus foncée pour la valeur */
+        }
+    </style>
+    {% block stylesheets %}{% endblock %}
+</head>
+<body>
+    {# Inclusion directe du Sidebar #}
+    <div class="sidebar-fixed-desktop">
+        {% include 'components/sidebar.html.twig' with {'active': 'notification'} %}
+    </div>
+
+    <main class="container-fluid py-5">
+        <h1 class="mb-5 text-center">Planification</h1>
+
+        <div class="row justify-content-center">
+            {# Augmentation de la largeur de la colonne pour la carte #}
+            <div class="col-md-8 col-lg-6"> {# Prend 66% sur md, 50% sur lg #}
+                <div class="card p-5"> {# Augmentation du padding interne de la carte #}
+                    <div class="card-body">
+                        {# Informations de la tâche (non des formulaires) #}
+                        <div class="mb-4">
+                            <div class="info-label">Tâche</div>
+                            <div class="info-display">
+                                <span class="info-value">{{tache.tache}}</span>
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <div class="info-label">Activité</div>
+                            <div class="info-display">
+                                <span class="info-value">{{tache.activite.activite}}</span>
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <div class="info-label">Date echeance</div>
+                            <div class="info-display">
+                                <span class="info-value">{{ tache.dateEcheance|date('d/m/Y H:i') }}</span>
+                            </div>
+                        </div>
+
+                        <h5 class="mt-5 mb-3 text-center">Date prevue</h5> {# Titre pour la nouvelle section #}
+
+                        <form action="/tache/planifier" method="POST">
+                            {# Champ pour sélectionner la nouvelle date #}
+                            <div class="mb-4">
+                                <label for="newDate" class="form-label">Sélectionnez la nouvelle date</label>
+                                <input type="datetime-local" class="form-control" id="newDate" name="datePrevue" required >
+                            </div>
+
+                            <input type="hidden" name="id_tache" value="{{ tache.id }}">
+
+                            <div class="text-center mt-5">
+                                <button type="submit" class="btn btn-primary btn-lg">Replanifier</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% block page_content %}{% endblock %}
+    </main>
+
+    <!-- Bootstrap JS CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
+    {% block javascripts %}{% endblock %}
+
+    <script>
+        // document.addEventListener('DOMContentLoaded', function() {
+        //     document.querySelector('form').addEventListener('submit', function(event) {
+        //         event.preventDefault(); // Empêche la soumission par défaut du formulaire
+
+        //         // Récupérer les valeurs des informations statiques (pour l'exemple de log)
+        //         const taskName = document.querySelector('.info-display .info-value:nth-child(1)').textContent;
+        //         const activityName = document.querySelector('.info-display .info-value:nth-child(2)').textContent;
+        //         const dueDate = document.querySelector('.info-display .info-value:nth-child(3)').textContent;
+                
+        //         const newDate = document.getElementById('newDate').value;
+
+        //         console.log('Replanification déclenchée :');
+        //         console.log('Tâche:', taskName);
+        //         console.log('Activité:', activityName);
+        //         console.log('Ancienne date prévue:', dueDate);
+        //         console.log('Nouvelle date:', newDate);
+
+        //         // Ici, vous intégreriez votre logique pour envoyer ces données au backend Symfony
+        //         // pour mettre à jour la date de la tâche.
+        //     });
+        // });
+    </script>
+</body>
+</html>

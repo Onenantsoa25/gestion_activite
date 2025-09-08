@@ -18,7 +18,6 @@
       transition: padding-left 0.3s ease;
     }
 
-    /* Sidebar fixe sur desktop */
     .sidebar-fixed-desktop {
       width: 280px;
       position: fixed;
@@ -31,56 +30,18 @@
       overflow-y: auto;
     }
 
-    /* Cacher le sidebar fixe sur mobile */
     @media (max-width: 767.98px) {
-      body {
-        padding-left: 0;
-      }
-      .sidebar-fixed-desktop {
-        display: none;
-      }
+      body { padding-left: 0; }
+      .sidebar-fixed-desktop { display: none; }
     }
 
-    /* Styles pour les cartes */
     .card {
       border-radius: 12px;
       border: 1px solid #e0e0e0;
       box-shadow: 0 8px 25px rgba(0,0,0,0.1);
-    }
-
-    /* Graphique camembert simulé */
-    .pie-chart-container {
       position: relative;
-      width: 200px;
-      height: 200px;
-      border-radius: 50%;
-      background: conic-gradient(
-        #0d6efd 0% 25%,
-        #dc3545 25% 35%,
-        #198754 35% 100%
-      );
-      margin: 0 auto;
+      overflow: hidden;
     }
-
-    .pie-chart-legend {
-      list-style: none;
-      padding: 0;
-      margin-top: 1rem;
-    }
-    .pie-chart-legend li {
-      display: flex;
-      align-items: center;
-      margin-bottom: 0.5rem;
-    }
-    .pie-chart-legend .color-box {
-      width: 15px;
-      height: 15px;
-      margin-right: 0.5rem;
-      border-radius: 3px;
-    }
-    .color-box.blue { background-color: #0d6efd; }
-    .color-box.red { background-color: #dc3545; }
-    .color-box.green { background-color: #198754; }
 
     .vertical-divider {
       border-left: 1px solid #dee2e6;
@@ -128,14 +89,9 @@
     }
 
     @media (max-width: 767.98px) {
-      main.container-fluid {
-        margin-left: 0;
-        width: 100%;
-        padding: 1rem 0.5rem;
-      }
+      main.container-fluid { margin-left: 0; width: 100%; padding: 1rem 0.5rem; }
     }
 
-    /* Bouton menu mobile */
     .mobile-menu-bar {
       display: none;
       position: fixed;
@@ -150,79 +106,111 @@
       justify-content: space-between;
     }
     @media (max-width: 767.98px) {
-      .mobile-menu-bar {
-        display: flex;
-      }
+      .mobile-menu-bar { display: flex; }
     }
 
     #pieChart {
       max-width: 350px;
       max-height: 350px;
     }
+
+    /* Loading overlay */
+    .card-loading {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(255, 255, 255, 0.9);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 10;
+      transition: opacity 0.3s ease;
+    }
+    .spinner-border {
+      width: 2rem;
+      height: 2rem;
+      color: #0d6efd;
+    }
+    .loading-text {
+      margin-left: 0.75rem;
+      color: #333;
+    }
+    .card-content.hidden { opacity: 0.3; }
+    .card-loading.hidden { display: none; }
   </style>
   {% block stylesheets %}{% endblock %}
 </head>
 <body>
 
-  <!-- Sidebar fixe desktop -->
   <div class="sidebar-fixed-desktop">
     {% include 'components/sidebar-manager.html.twig' with {'active': 'dashboard'} %}
   </div>
 
-  <!-- Barre menu mobile -->
   <div class="mobile-menu-bar d-md-none">
     <h5 class="mb-0">Menu</h5>
-    <button class="btn btn-outline-primary" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileSidebar" aria-label="Ouvrir le menu">
+    <button class="btn btn-outline-primary" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileSidebar">
       <i class="bi bi-list fs-4"></i>
     </button>
   </div>
 
-  <!-- Sidebar mobile offcanvas -->
-  <div class="offcanvas offcanvas-start" tabindex="-1" id="mobileSidebar" aria-labelledby="mobileSidebarLabel">
+  <div class="offcanvas offcanvas-start" tabindex="-1" id="mobileSidebar">
     <div class="offcanvas-header">
-      <h5 id="mobileSidebarLabel" class="offcanvas-title">Menu</h5>
-      <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Fermer"></button>
+      <h5 class="offcanvas-title">Menu</h5>
+      <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas"></button>
     </div>
     <div class="offcanvas-body">
       {% include 'components/sidebar-manager.html.twig' with {'active': 'dashboard'} %}
     </div>
   </div>
 
-  <!-- Contenu principal -->
   <main class="container-fluid py-4">
     <h1 class="mb-4 text-center">Tableau de bord des activités</h1>
 
     <div class="row g-4 mb-4">
+      <!-- Tâches -->
       <div class="col-md-6">
         <div class="card h-100">
-          <div class="card-body text-center">
-            <h5 class="card-title mb-4">Tâches</h5>
-            {# <div class="pie-chart-container mb-4"></div> #}
-            <div class="d-flex justify-content-center"> 
-              <canvas id="pieChart" width="1" height="1"></canvas>
+          <div class="card-loading" id="loadingTasks">
+            <div class="d-flex align-items-center">
+              <div class="spinner-border" role="status"></div>
+              <span class="loading-text">Chargement des tâches...</span>
             </div>
-            {# <ul class="pie-chart-legend">
-              <li><span class="color-box blue"></span> En cours</li>
-              <li><span class="color-box red"></span> À faire</li>
-              <li><span class="color-box green"></span> Terminé</li>
-            </ul> #}
+          </div>
+          <div class="card-content hidden" id="contentTasks">
+            <div class="card-body text-center">
+              <h5 class="card-title mb-4">Tâches</h5>
+              <div class="d-flex justify-content-center">
+                <canvas id="pieChart"></canvas>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
+      <!-- Temps passé -->
       <div class="col-md-6">
         <div class="card h-100">
-          <div class="card-body d-flex flex-column justify-content-center align-items-center">
-            <h5 class="card-title mb-4">Temps passé</h5>
+          <div class="card-loading" id="loadingTime">
             <div class="d-flex align-items-center">
-              <div class="text-center me-4">
-                <p class="mb-0 text-secondary fw-semibold">Jour</p>
-                <h3 class="fw-bold">48</h3>
-              </div>
-              <div class="vertical-divider"></div>
-              <div class="text-center ms-4">
-                <p class="mb-0 text-secondary fw-semibold">Semaine</p>
-                <h3 class="fw-bold">54h</h3>
+              <div class="spinner-border" role="status"></div>
+              <span class="loading-text">Chargement du temps...</span>
+            </div>
+          </div>
+          <div class="card-content hidden" id="contentTime">
+            <div class="card-body d-flex flex-column justify-content-center align-items-center">
+              <h5 class="card-title mb-4">Temps passé</h5>
+              <div class="d-flex align-items-center">
+                <div class="text-center me-4">
+                  <p class="mb-0 text-secondary fw-semibold">Jour</p>
+                  <h3 class="fw-bold" id="temps_jour">--h</h3>
+                </div>
+                <div class="vertical-divider"></div>
+                <div class="text-center ms-4">
+                  <p class="mb-0 text-secondary fw-semibold">Semaine</p>
+                  <h3 class="fw-bold" id="temps_semaine">--h</h3>
+                </div>
               </div>
             </div>
           </div>
@@ -230,134 +218,98 @@
       </div>
     </div>
 
+    <!-- Activités -->
     <div class="row g-4">
       <div class="col-12">
         <div class="card h-100">
-          <div class="card-body">
-            <h5 class="card-title mb-4 text-center">Tâche à effectuer par Activité</h5>
-            {# <div class="activity-tasks-list">
-              {% set activities = [
-                { 'name': 'Activité 1', 'taskCount': 8 },
-                { 'name': 'Activité 2', 'taskCount': 5 },
-                { 'name': 'Activité 3', 'taskCount': 10 },
-                { 'name': 'Activité 4', 'taskCount': 5 } 
-              ] %}
-
-              {% set maxTasks = 0 %}
-              {% for activity in activities %}
-                {% if activity.taskCount > maxTasks %}
-                  {% set maxTasks = activity.taskCount %}
-                {% endif %}
-              {% endfor %}
-              {% if maxTasks == 0 %}
-                {% set maxTasks = 1 %}
-              {% endif %}
-
-              {% for activity in activities %}
-                {% set barWidth = (activity.taskCount / maxTasks * 100) | round %}
-                <div class="activity-item">
-                  <span class="activity-name">{{ activity.name }}</span>
-                  <div class="bar-wrapper">
-                    <div class="activity-bar" style="width: {{ barWidth }}%;"></div>
-                  </div>
-                  <span class="task-count">{{ activity.taskCount }} tâches</span>
-                </div>
-              {% endfor %}
-            </div> #}
-            <div class="activity-tasks-list" id="activityTasksList">
-              <!-- Les activités seront injectées ici via JS -->
+          <div class="card-loading" id="loadingActivities">
+            <div class="d-flex align-items-center">
+              <div class="spinner-border" role="status"></div>
+              <span class="loading-text">Chargement des activités...</span>
             </div>
-
+          </div>
+          <div class="card-content hidden" id="contentActivities">
+            <div class="card-body">
+              <h5 class="card-title mb-4 text-center">Tâches à effectuer par Activité</h5>
+              <div class="activity-tasks-list" id="activityTasksList"></div>
+            </div>
           </div>
         </div>
       </div>
     </div>
   </main>
 
-  <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
+function showLoading(id) {
+  document.getElementById('loading' + id).classList.remove('hidden');
+  document.getElementById('content' + id).classList.add('hidden');
+}
+function hideLoading(id) {
+  document.getElementById('loading' + id).classList.add('hidden');
+  document.getElementById('content' + id).classList.remove('hidden');
+}
+
 document.addEventListener('DOMContentLoaded', () => {
-    const container = document.getElementById('activityTasksList');
-    const jourElement = document.querySelector('div.text-center h3:nth-child(2)');
-    const semaineElement = document.querySelector('div.text-center.ms-4 h3');
-    const pieChartCtx = document.getElementById('pieChart').getContext('2d');
-    let pieChart;
+  showLoading('Tasks');
+  showLoading('Time');
+  showLoading('Activities');
 
-    fetch('/api/manager/dashboard')
-        .then(response => response.json())
-        .then(data => {
-            // =======================
-            // 1. Liste des activités
-            // =======================
-            const activities = data.taches_a_faire.map(item => ({
-                name: item.activite.activite,
-                taskCount: item.nombre
-            }));
+  const jourElement = document.getElementById('temps_jour');
+  const semaineElement = document.getElementById('temps_semaine');
+  const pieChartCtx = document.getElementById('pieChart').getContext('2d');
+  let pieChart;
 
-            let maxTasks = Math.max(...activities.map(a => a.taskCount), 1);
+  fetch('/api/manager/dashboard')
+    .then(response => response.json())
+    .then(data => {
+      // Temps passé
+      jourElement.textContent = data.jours + 'h';
+      semaineElement.textContent = data.semaine + 'h';
+      hideLoading('Time');
 
-            activities.forEach(activity => {
-                const barWidth = Math.round((activity.taskCount / maxTasks) * 100);
-                
-                const activityItem = document.createElement('div');
-                activityItem.className = 'activity-item';
-                activityItem.innerHTML = `
-                    <span class="activity-name">${activity.name}</span>
-                    <div class="bar-wrapper">
-                        <div class="activity-bar" style="width: ${barWidth}%;"></div>
-                    </div>
-                    <span class="task-count">${activity.taskCount} tâches</span>
-                `;
-                container.appendChild(activityItem);
-            });
+      // Camembert
+      const labels = ['À faire', 'En cours', 'Terminé'];
+      const values = [data.afaire, data.encours, data.nonTermine];
+      const colors = ['#dc3545', '#0d6efd', '#198754'];
 
-            // =======================
-            // 2. Temps passé
-            // =======================
-            jourElement.textContent = data.jours + 'h';
-            semaineElement.textContent = data.semaine + 'h';
+      if (pieChart) pieChart.destroy();
+      pieChart = new Chart(pieChartCtx, {
+        type: 'pie',
+        data: { labels, datasets: [{ data: values, backgroundColor: colors, borderWidth: 1 }] },
+        options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+      });
+      hideLoading('Tasks');
 
-            // =======================
-            // 3. Camembert Chart.js
-            // =======================
-            const labels = ['À faire', 'En cours', 'Terminé'];
-            const values = [data.afaire, data.encours, data.nonTermine];
-            const colors = ['#dc3545', '#0d6efd', '#198754'];
+      // Activités
+      const container = document.getElementById('activityTasksList');
+      const activities = data.taches_a_faire.map(item => ({
+        name: item.activite.activite,
+        taskCount: item.nombre
+      }));
+      let maxTasks = Math.max(...activities.map(a => a.taskCount), 1);
 
-            if (pieChart) pieChart.destroy(); // Détruire ancien chart si existe
-
-            pieChart = new Chart(pieChartCtx, {
-                type: 'pie',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        data: values,
-                        backgroundColor: colors,
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return context.label + ': ' + context.raw;
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-        })
-        .catch(err => console.error('Erreur récupération API:', err));
+      activities.forEach(activity => {
+        const barWidth = Math.round((activity.taskCount / maxTasks) * 100);
+        const activityItem = document.createElement('div');
+        activityItem.className = 'activity-item';
+        activityItem.innerHTML = `
+          <span class="activity-name">${activity.name}</span>
+          <div class="bar-wrapper"><div class="activity-bar" style="width:${barWidth}%"></div></div>
+          <span class="task-count">${activity.taskCount} tâches</span>`;
+        container.appendChild(activityItem);
+      });
+      hideLoading('Activities');
+    })
+    .catch(err => {
+      console.error('Erreur API:', err);
+      hideLoading('Tasks');
+      hideLoading('Time');
+      hideLoading('Activities');
+    });
 });
 </script>
 
-  {% block javascripts %}{% endblock %}
+{% block javascripts %}{% endblock %}
 </body>
 </html>

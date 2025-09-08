@@ -124,8 +124,8 @@
                                 <thead class="table-light">
                                     <tr>
                                         <th scope="col">Libellé</th>
-                                        <th scope="col">Date d'échéance</th>
                                         <th scope="col">debut</th>
+                                        <th scope="col">Date d'échéance</th>
                                         <th scope="col">Temps d'estimation</th>
                                         <th scope="col">Activité</th>
                                         <th scope="col">Actions</th>
@@ -135,8 +135,8 @@
                                     {% for tache in taches %}
                                         <tr>
                                             <td>{{tache.tache}}</td>
-                                            <td>{{ tache.dateEcheance|date('d/m/Y H:i') }}</td>
                                             <td>{{tache.debut|date('d/m/Y H:i')}}</td>
+                                            <td>{{ tache.dateEcheance|date('d/m/Y H:i') }}</td>
                                             <td>{{tache.estimation}}</td>
                                             <td>{{tache.activite.activite}}</td>
                                             <td>
@@ -147,7 +147,7 @@
                                                 <a href="/collaborateur/replanifier/tache/{{tache.id}}">
                                                     <button class="btn btn-sm btn-warning replanifier-btn" 
                                                             data-tache-id="{{ tache.id }}">
-                                                        <i class="bi bi-pencil-square"></i> Replanifier
+                                                        <i class="bi bi-pencil-square"></i>
                                                     </button>
                                                 </a>
                                             </td>

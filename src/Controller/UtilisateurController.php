@@ -47,9 +47,13 @@ class UtilisateurController extends AbstractController
     }
 
     #[Route('/manager/charges_travail', name: 'charge_de_travail', methods: ['GET'])]
-    public function charges_travail(Request $request): Response
+    public function charges_travail(Request $request, SessionInterface $session): Response
     {
         $this->denyAccessUnlessGranted('ROLE_MANAGER');
+
+        if($session->get('activite') !== null){
+            $session->remove('activite');
+        }
 
         // @var TypeActiviteService[] $types
         $role = new Role();
@@ -85,6 +89,32 @@ public function get_rapport(Request $request): Response
         'debut' => $debut ? $debut->format('Y-m-d') : null,
         'fin' => $fin ? $fin->format('Y-m-d') : null,
     ]);
+    // On suppose que $debut et $fin sont peut-être null au départ
+
+// if ($debut === null && $fin === null) {
+//     // Cas 1 : début et fin null → on prend la semaine en cours
+//     $debut = new \DateTimeImmutable('monday this week');
+//     $fin   = new \DateTimeImmutable('friday this week');
+
+// } elseif ($debut === null && $fin !== null) {
+//     // Cas 2 : seulement début null → semaine de fin
+//     $debut = $fin->modify('monday this week');
+//     $fin   = $fin->modify('friday this week');
+
+// } elseif ($debut !== null && $fin === null) {
+//     // Cas 3 : seulement fin null → semaine de début
+//     $debut = $debut->modify('monday this week');
+//     $fin   = $debut->modify('friday this week');
+// }
+
+// // Cas 4 : si les deux sont remplis → on ne touche à rien
+
+// return $this->render('collaborateur/rapport-recapitulatif.html.twig', [
+//     'taches' => $tacheTerminee,
+//     'debut'  => $debut ? $debut->format('Y-m-d') : null,
+//     'fin'    => $fin ? $fin->format('Y-m-d') : null,
+// ]);
+
 }
 
 }

@@ -27,7 +27,7 @@ class ActiviteService
     }
 
     public function findAllByUser(Utilisateur $utilisateur): array {
-        return $this->activiteRepository->findAllByUser($utilisateur);
+        return $this->activiteRepository->findNonTermineeUtilisateur($utilisateur);
     }
 
     public function findAllNonTerminee(): array {
@@ -62,6 +62,10 @@ class ActiviteService
 
     public function commencer(int $id): void {
         $this->activiteRepository->commencer($id);
+    }
+
+    public function modifier(Activite $activite): void {
+        $this->activiteRepository->modifier($activite);
     }
 
 }

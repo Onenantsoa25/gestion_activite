@@ -67,7 +67,7 @@ CREATE TABLE anomalie(
 CREATE TABLE activite_terminee(
    id_activite_terminee INT AUTO_INCREMENT,
    date_terminee DATETIME NOT NULL,
-   temps_passe DECIMAL(15,2)   NOT NULL,
+   -- temps_passe DECIMAL(15,2)   NOT NULL,
    id_activite INT  NOT NULL,
    PRIMARY KEY(id_activite_terminee),
    UNIQUE(id_activite),
@@ -149,3 +149,19 @@ alter table tache_terminee add column est_validee BOOLEAN;
 
 ALTER TABLE tache_terminee 
 ADD COLUMN justificatif VARCHAR(255); -- LONGBLO
+
+
+ALTER TABLE tache 
+MODIFY COLUMN date_echeance DATETIME NOT NULL;
+
+ALTER TABLE historique_tache 
+MODIFY debut DATETIME NULL;
+
+CREATE TABLE tache_supprimee (
+   id_tache_supprimee int primary key AUTO_INCREMENT,
+   id_tache int REFERENCES tache(id_tache),
+   date_suppression DATETIME
+);
+
+ALTER TABLE tache_supprimee
+ADD CONSTRAINT unique_id_tache UNIQUE (id_tache);

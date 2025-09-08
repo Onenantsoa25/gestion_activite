@@ -58,4 +58,12 @@ class NotificationController extends AbstractController
         $tache = $this->tacheService->findById($id);
         return $this->render('collaborateur/planifier-tache.html.twig', ['tache' => $tache]);
     }
+
+    #[Route('/notification/lue/{id}', name: 'marquer_notification', methods: ['GET'])]
+    public function marquer(int $id): Response {
+        $this->denyAccessUnlessGranted('ROLE_COLLABORATEUR');
+        $this->notificationService->lire($id);
+        return $this->redirectToRoute('notifications');
+    }
+
 }

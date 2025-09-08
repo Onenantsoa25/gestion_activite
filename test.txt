@@ -5,4 +5,35 @@ le collaborateur termine la tache en saisissant le temps passee, en ajoutant un 
 le manager recoit de notification pour le tache terminee et verifie le livrable et puis la
 
 
-;
+SELECT 
+            t.id_tache,
+            t.tache,
+            COALESCE(h.debut, t.debut) AS debut,
+            COALESCE(h.date_echeance, t.date_echeance) AS date_echeance,
+            t.id_utilisateur,
+            t.id_activite,
+            COALESCE(h.estimation, t.estimation) AS estimation
+        FROM tache t
+        LEFT JOIN historique_tache h ON t.id_tache = h.id_tache
+        WHERE t.id_utilisateur = :id_utilisateur
+        AND t.id_tache NOT IN (SELECT id_tache FROM tache_terminee)
+        AND (
+            -- taches qui commencent aujourd'hui
+            COALESCE(h.debut, t.debut) BETWEEN :dayStart AND :dayEnd
+            -- ou taches commencées avant aujourd'hui
+            OR COALESCE(h.debut, t.debut) < :dayStart
+        )
+        ORDER BY COALESCE(h.debut, t.debut) ASC
+
+
+
+SELECT 
+    a.id_activite,
+    coalesce(ma.activite, a.activite) as activite,
+    coalesce(ma.date_debut, a.date_debut) as date_debut,
+    coalesce(ma.date_echeance, a.date_echeance) as date_acheance,
+    a.est_valide,
+    a.id_type_activite,
+    a.id_utilisateur_auteur
+FROM activite a LEFT JOIN modification_activite ma ON
+    ma.id_activite = a.id_activite WHERE a.id_activite = 1

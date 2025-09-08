@@ -116,9 +116,9 @@
                                 <tbody>
                                     {% for activite in activites %}
                                         <tr data-activity-id="1" data-activity-status="not_started">
-                                            <td class="align-middle">{{activite.nom_activite}}</td>
+                                            <td class="align-middle">{{activite.activite}}</td>
                                             <td class="text-center-buttons">
-                                                <a href="/collaborateur/taches/activite?id_activite={{activite.id_activite}}"><i class="bi bi-eye-fill view-icon action-icon" title="Voir"></i></a>
+                                                <a href="/collaborateur/taches/activite?id_activite={{activite.id}}"><i class="bi bi-eye-fill view-icon action-icon" title="Voir"></i></a>
                                                 <i class="bi bi-stop-circle-fill end-icon action-icon action-icon" title="Terminer" ></i>
                                             </td>
                                         </tr>

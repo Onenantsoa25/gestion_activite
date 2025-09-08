@@ -62,6 +62,9 @@ class Tache
         return $this->id;
     }
 
+    public function setId(int $id): void {
+        $this->id = $id;
+    }
     // ... (autres getters/setters)
 
     public function getTache(): ?string

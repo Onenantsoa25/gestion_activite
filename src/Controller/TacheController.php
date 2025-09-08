@@ -87,7 +87,11 @@ class TacheController extends AbstractController
         $this->tacheService->insertion_manager($tache);
 
         // $taches = $this->tacheService->findAllByActivite($activite);
-        return $this->redirectToRoute('listes_tache_ajout_manager');
+        // if($activite->isEstValide()){
+            return $this->redirectToRoute('listes_tache_ajout_manager');
+        // } else {
+
+        // }
     }
 
     #[Route('/manager/tache/attribuer', name: 'attribuer', methods: ['GET'])]
@@ -138,14 +142,15 @@ class TacheController extends AbstractController
         // if (!$utilisateurSession) {
         //     throw new \RuntimeException('Utilisateur non trouvé en session');
         // }
-        $activite = $this->activiteService->findById($request->get('id_activite'));
+        // $activite = $this->activiteService->findById($request->get('id_activite'));
 
         $utilisateur = $this->getUser(); //$this->utilisateurService->findById($utilisateurSession->getId());
 
         $activites = $this->typeActiviteService->findAll();
+        $type = $this->typeActiviteService->findById($request->get('id_activite'));
 
         // $taches = $this->tacheService->findAllByUser($utilisateur);
-        $taches = $this->tacheService->tachesNonTermineesActivite($utilisateur, $activite);
+        $taches = $this->tacheService->tachesNonTermineesActivite($utilisateur, $type);
 
         return $this->render('collaborateur/liste-taches.html.twig', [
             'taches' => $taches,
@@ -473,10 +478,11 @@ public function terminer_tache(Request $request): Response
     }
 
     #[Route('/taches/activite/soumise/{id}', name: 'liste_taches_activite_soumise', methods: ['GET'])]
-    public function taches_activite_soumise(int $id): Response {
+    public function taches_activite_soumise(int $id, SessionInterface $session): Response {
         $this->denyAccessUnlessGranted('ROLE_MANAGER');
         $activite = $this->activiteService->findById($id);
         $taches = $this->tacheService->findAllByActivite($activite);
+        $session->set('activite', $activite);
         return $this->render('manager/taches-activite-soumise.html.twig', [
             'taches' => $taches,
             'activite' => $activite,
@@ -496,10 +502,158 @@ public function terminer_tache(Request $request): Response
 
     #[Route('/collaborateur/replanifier/tache', name: 'replanifier_tache', methods: ['POST'])]
     public function replanifier_tache(Request $request): Response {
+        $this->denyAccessUnlessGranted('ROLE_COLLABORATEUR');
+        
         $date = new \DateTime($request->get('dateDebut'));
         $id = $request->get('id_tache');
         $this->tacheService->replanifier($id, $date);
         return $this->redirectToRoute('calendrier_tache_collab');
+    }
+
+
+    #[Route('/manager/modifier/tache/{id}', name: 'modifier_tache_page', methods: ['GET'])]
+    public function modifier_page(int $id): Response {
+        $this->denyAccessUnlessGranted('ROLE_MANAGER');
+
+        $tache = $this->tacheService->findById($id);
+        return $this->render('manager/modification-tache.html.twig', [
+            'tache' => $tache,
+        ]);
+    }
+
+    #[Route('/manager/modifier/tache/collab/{id}', name: 'modifier_tache_page_collab', methods: ['GET'])]
+    public function modifier_collab_page(int $id): Response {
+        $this->denyAccessUnlessGranted('ROLE_MANAGER');
+
+        $tache = $this->tacheService->findById($id);
+        return $this->render('manager/modification-tache-soumise.html.twig', [
+            'tache' => $tache,
+        ]);
+    }
+
+    // #[Route('/manager/modifier/tache', name: 'modifier_tache', methods: ['POST'])]
+    // public function modifier_tache(Request $request): Response {
+    //     $this->denyAccessUnlessGranted('ROLE_MANAGER');
+    //     $date = new \DateTime($request->request->get('dateEcheance'));
+    //     $id = $request->get('id_tache');
+    //     $nom = $request->get('tache');
+    //     $estimation = $request->get('estimation');
+    //     $tache = $this->tacheService->findById($id);
+    //     $tache->setDateEcheance($date);
+    //     $tache->setTache($nom);
+    //     $tache->setEstimation($estimation);
+    //     $origin = $this->tacheService->findById($id);
+    //     if($origin->getDateEcheance() == $date || $origin->getTache() == $nom || $origin->getEstimation() == $estimation) {
+    //         $this->tacheService->modifier($tache);
+    //     }
+    //     return $this->redirectToRoute('liste_activite_manager');
+    // }
+    #[Route('/manager/modifier/tache', name: 'modifier_tache', methods: ['POST'])]
+    public function modifier_tache(Request $request): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_MANAGER');
+
+        $id = $request->request->get('id_tache');
+        $tache = $this->tacheService->findById($id);
+
+        if (!$tache) {
+            throw $this->createNotFoundException("Tâche introuvable avec l'id $id");
+        }
+
+        // Récupération des données du formulaire
+        // $nom        = $request->request->get('tache');
+        $estimation = (float) $request->request->get('estimation');
+        $dateStr    = $request->request->get('dateEcheance');
+
+        try {
+            $date = new \DateTime($dateStr);
+        } catch (\Exception $e) {
+            throw new \InvalidArgumentException("Date d'échéance invalide : $dateStr");
+        }
+
+        // Vérifier si au moins un champ a changé
+        $hasChanged = false;
+
+        // if ($tache->getTache() !== $nom) {
+        //     $tache->setTache($nom);
+        //     $hasChanged = true;
+        // }
+
+        if ($tache->getEstimation() !== $estimation) {
+            $tache->setEstimation($estimation);
+            $hasChanged = true;
+        }
+
+        if ($tache->getDateEcheance() != $date) { // comparaison de valeur, pas de référence
+            $tache->setDateEcheance($date);
+            $hasChanged = true;
+        }
+
+        // Mise à jour uniquement si nécessaire
+        if ($hasChanged) {
+            $this->tacheService->modifier($tache);
+        }
+
+        return $this->redirectToRoute('liste_activite_manager');
+    }
+
+        #[Route('/manager/modifier/tache/collab', name: 'modifier_tache_collab', methods: ['POST'])]
+    public function modifier_tache_collab(Request $request): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_MANAGER');
+
+        $id = $request->request->get('id_tache');
+        $tache = $this->tacheService->findById($id);
+
+        if (!$tache) {
+            throw $this->createNotFoundException("Tâche introuvable avec l'id $id");
+        }
+
+        // Récupération des données du formulaire
+        // $nom        = $request->request->get('tache');
+        $estimation = (float) $request->request->get('estimation');
+        $dateStr    = $request->request->get('dateEcheance');
+
+        try {
+            $date = new \DateTime($dateStr);
+        } catch (\Exception $e) {
+            throw new \InvalidArgumentException("Date d'échéance invalide : $dateStr");
+        }
+
+        // Vérifier si au moins un champ a changé
+        $hasChanged = false;
+
+        // if ($tache->getTache() !== $nom) {
+        //     $tache->setTache($nom);
+        //     $hasChanged = true;
+        // }
+
+        if ($tache->getEstimation() !== $estimation) {
+            $tache->setEstimation($estimation);
+            $hasChanged = true;
+        }
+
+        if ($tache->getDateEcheance() != $date) { // comparaison de valeur, pas de référence
+            $tache->setDateEcheance($date);
+            $hasChanged = true;
+        }
+
+        // Mise à jour uniquement si nécessaire
+        if ($hasChanged) {
+            $this->tacheService->modifier($tache);
+        }
+
+        return $this->redirectToRoute('liste_non_validees');
+    }
+
+    #[Route('/manager/tache/supprimer/{id}', name: 'supprimer_tache', methods: ['GET'])]
+    public function supprimer(int $id): Response {
+        $this->denyAccessUnlessGranted('ROLE_MANAGER');
+        $tache = $this->tacheService->findById($id);
+        $this->tacheService->supprimer($id);
+        return $this->redirectToRoute('liste_taches_activite_soumise', [
+            'id' => $tache->getActivite()->getId(),
+        ]);
     }
 
 }

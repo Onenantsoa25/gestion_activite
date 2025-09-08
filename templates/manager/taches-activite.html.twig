@@ -156,6 +156,13 @@
         padding-top: 3.5rem; /* laisser la place au menu fixe */
       }
     }
+
+    .table th.action-col,
+    .table td.action-col {
+        width: 1%;
+        white-space: nowrap;
+        text-align: center;
+    }
   </style>
   {% block stylesheets %}{% endblock %}
 </head>
@@ -189,7 +196,8 @@
   <main class="container-fluid py-5">
     <h1 class="mb-5 text-center">
       <i class="bi bi-check2-square me-2"></i>
-      Les tâches de l'activité {{ app.session.has('activite').activite is defined ? activityId : '1' }}
+      Les tâches de l'activité: 
+      <br>"{{ activite.activite }}"
     </h1>
 
     <div class="row justify-content-center">
@@ -212,6 +220,7 @@
                     <th><i class="bi bi-file-earmark-text me-1"></i> Tâche</th>
                     <th><i class="bi bi-calendar-event me-1"></i> Date d'échéance</th>
                     <th class="text-center-buttons"><i class="bi bi-person-lines-fill me-1"></i> Collaborateur attribué</th>
+                    <th class="action-col" ></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -233,6 +242,13 @@
                             </a>
                           </td>
                         {% endif %}
+                        <td class="action-col">
+                          <a href="/manager/modifier/tache/{{tachee.id}}">
+                            <button type="button" class="btn btn-sm btn-modify btn-action" title="Modifier">
+                                <i class="bi bi-pencil-square"></i>
+                            </button>
+                          </a>
+                        </td>
                       </tr>
                     {% endfor %}
                   {% endif %}

@@ -27,37 +27,92 @@ class ActiviteRepository extends ServiceEntityRepository
 
     public function findById(int $id): ?Activite
     {
-        return $this->createQueryBuilder('e')
-            ->andWhere('e.id = :id')
-            ->setParameter('id', $id)
-            ->getQuery()
-            ->getOneOrNullResult();
+        // return $this->createQueryBuilder('e')
+        //     ->andWhere('e.id = :id')
+        //     ->setParameter('id', $id)
+        //     ->getQuery()
+        //     ->getOneOrNullResult();
+        $conn = $this->getEntityManager()->getConnection();
+        $em = $this->getEntityManager();
+        $sql = "SELECT 
+                    a.id_activite,
+                    coalesce(ma.activite, a.activite) as activite,
+                    coalesce(ma.date_debut, a.date_debut) as date_debut,
+                    coalesce(ma.date_echeance, a.date_echeance) as date_echeance,
+                    a.est_valide,
+                    a.id_type_activite,
+                    a.id_utilisateur_auteur
+                FROM activite a LEFT JOIN modification_activite ma ON
+                    ma.id_activite = a.id_activite WHERE a.id_activite = :id_activite";
+
+        $stmt = $conn->prepare($sql);
+        $resultSet = $stmt->execute(["id_activite" => $id]);
+        $rows = $resultSet->fetchAllAssociative();
+        $row = $rows[0];
+        $activite = new Activite();
+
+        $utilisateurRepo = $em->getRepository(Utilisateur::class);
+        $typeRepo = $em->getRepository(TypeActivite::class);
+
+        $activite->setId($row['id_activite']);
+        $activite->setActivite($row['activite']);
+        $activite->setDateDebut($row['date_debut']);
+        $activite->setDateEcheance(new \DateTime($row['date_echeance']));
+        $activite->setEstValide($row['est_valide']);
+        $activite->setTypeActivite($typeRepo->find((int) $row['id_type_activite']));
+        $activite->setUtilisateurAuteur($utilisateurRepo->find((int) $row['id_utilisateur_auteur']));
+
+        return $activite;
     }
 
     public function findAllByUser(Utilisateur $utilisateur): array 
     {
         $conn = $this->getEntityManager()->getConnection();
 
-        $sql = "
-            SELECT DISTINCT
-                a.id_activite,
-                a.activite AS nom_activite,
-                a.date_debut,
-                a.date_echeance,
-                a.est_valide,
-                ta.type_activite,
-                ta.id_type_activite
-            FROM 
-                activite a
-            JOIN 
-                type_activite ta ON a.id_type_activite = ta.id_type_activite
-            JOIN 
-                tache t ON a.id_activite = t.id_activite
-            WHERE 
-                t.id_utilisateur = :id_utilisateur
-            ORDER BY 
-                a.date_echeance
-        ";
+        // $sql = "
+        //     SELECT DISTINCT
+        //         a.id_activite,
+        //         a.activite AS nom_activite,
+        //         a.date_debut,
+        //         a.date_echeance,
+        //         a.est_valide,
+        //         ta.type_activite,
+        //         ta.id_type_activite
+        //     FROM 
+        //         activite a
+        //     JOIN 
+        //         type_activite ta ON a.id_type_activite = ta.id_type_activite
+        //     JOIN 
+        //         tache t ON a.id_activite = t.id_activite
+        //     WHERE 
+        //         t.id_utilisateur = :id_utilisateur
+        //     ORDER BY 
+        //         a.date_echeance
+        // ";
+
+        $sql = "SELECT DISTINCT
+                    a.id_activite,
+                    a.activite AS nom_activite,
+                    COALESCE(ma.date_debut, a.date_debut) AS date_debut,
+                    COALESCE(ma.date_echeance, a.date_echeance) AS date_echeance,
+                    a.est_valide,
+                    ta.type_activite,
+                    ta.id_type_activite
+                FROM 
+                    activite a
+                JOIN 
+                    type_activite ta ON a.id_type_activite = ta.id_type_activite
+                JOIN 
+                    tache t ON a.id_activite = t.id_activite
+                LEFT JOIN 
+                    modification_activite ma 
+                    ON a.id_activite = ma.id_activite
+                WHERE 
+                    t.id_utilisateur = :id_utilisateur
+                AND 
+                    a.est_valide = 1
+                ORDER BY 
+                    date_echeance";
 
         $stmt = $conn->prepare($sql);
         $resultSet = $stmt->executeQuery([
@@ -83,10 +138,26 @@ class ActiviteRepository extends ServiceEntityRepository
 
         // Comme on n'a pas d'entité ActiviteTerminee, on fait via SQL natif en transformant en objet
         $conn = $em->getConnection();
-        $sql = "
-            SELECT * 
-            FROM activite a
-        ";
+        // $sql = "
+        //     SELECT * 
+        //     FROM activite a
+        // ";
+
+        $sql = "SELECT 
+                    a.id_activite,
+                    a.activite,
+                    COALESCE(ma.date_debut, a.date_debut) AS date_debut,
+                    COALESCE(ma.date_echeance, a.date_echeance) AS date_echeance,
+                    a.est_valide,
+                    a.id_type_activite,
+                    a.id_utilisateur_auteur
+                FROM 
+                    activite a
+                LEFT JOIN 
+                    modification_activite ma 
+                    ON a.id_activite = ma.id_activite
+                WHERE a.est_valide = 1";
+
         $stmt = $conn->prepare($sql);
         $resultSet = $stmt->executeQuery();
         $rows = $resultSet->fetchAllAssociative();
@@ -114,16 +185,38 @@ class ActiviteRepository extends ServiceEntityRepository
     {
         $conn = $this->getEntityManager()->getConnection();
 
-        $sql = "
-            SELECT a.*
-            FROM activite a
-            WHERE a.est_valide = 0
-            AND a.id_activite NOT IN (
-                SELECT asup.id_activite
-                FROM activite_supprimees asup
-            )
-            ORDER BY a.date_echeance ASC
-        ";
+        // $sql = "
+        //     SELECT a.*
+        //     FROM activite a
+        //     WHERE a.est_valide = 0
+        //     AND a.id_activite NOT IN (
+        //         SELECT asup.id_activite
+        //         FROM activite_supprimees asup
+        //     )
+        //     ORDER BY a.date_echeance ASC
+        // ";
+
+        $sql = "SELECT 
+                    a.id_activite,
+                    a.activite,
+                    COALESCE(ma.date_debut, a.date_debut) AS date_debut,
+                    COALESCE(ma.date_echeance, a.date_echeance) AS date_echeance,
+                    a.est_valide,
+                    a.id_type_activite,
+                    a.id_utilisateur_auteur
+                FROM 
+                    activite a
+                LEFT JOIN 
+                    modification_activite ma 
+                    ON a.id_activite = ma.id_activite
+                WHERE 
+                    a.est_valide = 0
+                    AND a.id_activite NOT IN (
+                        SELECT asup.id_activite
+                        FROM activite_supprimees asup
+                    )
+                ORDER BY 
+                    date_echeance ASC";
 
         $stmt = $conn->prepare($sql);
         $resultSet = $stmt->executeQuery();
@@ -198,6 +291,34 @@ class ActiviteRepository extends ServiceEntityRepository
             'date_debut' => $date->format('Y-m-d H:i:s'), // conversion en string SQL
             'id'       => $idActivite
         ]);
+    }
+
+    public function findNonTermineeUtilisateur(Utilisateur $utilisateur): array {
+        $conn = $this->getEntityManager()->getConnection();
+        $sql = "SELECT DISTINCT id_activite from v_activite_tache_utilisateur where id_utilisateur = :id_utilisateur";
+        $stmt = $conn->prepare($sql);
+        $resultSet = $stmt->execute(["id_utilisateur" => $utilisateur->getId()]);
+        $rows = $resultSet->fetchAllAssociative();
+        $activites = [];
+        foreach ($rows as $row) {
+            $activites[] = $this->findById($row['id_activite']);
+        }       
+        return $activites;
+    }
+
+    public function modifier(Activite $activite): void {
+        $origin = $this->findById($activite->getId());
+        $conn = $this->getEntityManager()->getConnection();
+        if($origin->getActivite() !== $activite->getActivite() || $origin->getDateDebut() != $activite->getDateDebut() || $origin->getDateEcheance() != $activite->getDateEcheance()) {
+            $sql = "INSERT INTO modification_activite(activite, date_debut, date_echeance, id_activite) values (:activite, :date_debut, :date_echeance, :id_activite)";
+            $stmt = $conn->prepare($sql);
+            $stmt->executeStatement([
+                'activite' => $activite->getActivite(),
+                'date_debut' => $activite->getDateDebut(),
+                'date_echeance' => $activite->getDateEcheance(),
+                'id_activite' => $activite->getId(),
+            ]);
+        }
     }
 
 }

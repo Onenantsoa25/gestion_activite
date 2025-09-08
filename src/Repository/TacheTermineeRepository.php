@@ -99,45 +99,104 @@ class TacheTermineeRepository extends ServiceEntityRepository
     //         ->getResult();
     // }
 
-    public function rapportDates(Utilisateur $utilisateur, \DateTimeInterface $dateDebut, \DateTimeInterface $dateFin): array
-    {
-        $taches = $this->createQueryBuilder('tt')
-            ->join('tt.tache', 't')
-            ->join('t.utilisateur', 'u')
-            ->andWhere('u.id = :idUser')
-            ->andWhere('tt.dateTerminee BETWEEN :dateDebut AND :dateFin')
-            ->setParameter('idUser', $utilisateur->getId())
-            ->setParameter('dateDebut', $dateDebut->format('Y-m-d 00:00:00'))
-            ->setParameter('dateFin', $dateFin->format('Y-m-d 23:59:59'))
-            ->orderBy('tt.dateTerminee', 'ASC')
-            ->getQuery()
-            ->getResult();
+    // public function rapportDates(Utilisateur $utilisateur, \DateTimeInterface $dateDebut, \DateTimeInterface $dateFin): array
+    // {
+    //     $taches = $this->createQueryBuilder('tt')
+    //         ->join('tt.tache', 't')
+    //         ->join('t.utilisateur', 'u')
+    //         ->andWhere('u.id = :idUser')
+    //         ->andWhere('tt.dateTerminee BETWEEN :dateDebut AND :dateFin')
+    //         ->setParameter('idUser', $utilisateur->getId())
+    //         ->setParameter('dateDebut', $dateDebut->format('Y-m-d 00:00:00'))
+    //         ->setParameter('dateFin', $dateFin->format('Y-m-d 23:59:59'))
+    //         ->orderBy('tt.dateTerminee', 'ASC')
+    //         ->getQuery()
+    //         ->getResult();
 
-        // Regrouper par date
-        $groupes = [];
-        foreach ($taches as $tache) {
-            /** @var TacheTerminee $tache */
-            $dateCle = $tache->getDateTerminee()->format('d-m-Y');
-            $groupes[$dateCle][] = $tache;
-        }
+    //     // Regrouper par date
+    //     $groupes = [];
+    //     foreach ($taches as $tache) {
+    //         /** @var TacheTerminee $tache */
+    //         $dateCle = $tache->getDateTerminee()->format('d-m-Y');
+    //         $groupes[$dateCle][] = $tache;
+    //     }
 
-        // Construire le format final
-        $resultat = [];
-        $total = 0;
-        foreach ($groupes as $date => $listeTaches) {
-            $total_jour = TacheTerminee::totalDuree($listeTaches);
-            $resultat[] = [
-                'date' => $date,
-                'tache_terminee' => $listeTaches,
-                'total_duree' => $total_jour
-            ];
-            $total += $total_jour;
-        }
+    //     // Construire le format final
+    //     $resultat = [];
+    //     $total = 0;
+    //     foreach ($groupes as $date => $listeTaches) {
+    //         $total_jour = TacheTerminee::totalDuree($listeTaches);
+    //         $resultat[] = [
+    //             'date' => $date,
+    //             'tache_terminee' => $listeTaches,
+    //             'total_duree' => $total_jour
+    //         ];
+    //         $total += $total_jour;
+    //     }
 
-        return [
-            'details' => $resultat,
-            'total' => $total
-        ];
+    //     return [
+    //         'details' => $resultat,
+    //         'total' => $total
+    //     ];
+    // }
+
+public function rapportDates(Utilisateur $utilisateur, \DateTimeInterface $dateDebut, \DateTimeInterface $dateFin): array
+{
+    $taches = $this->createQueryBuilder('tt')
+        ->join('tt.tache', 't')
+        ->join('t.utilisateur', 'u')
+        ->andWhere('u.id = :idUser')
+        ->andWhere('tt.dateTerminee BETWEEN :dateDebut AND :dateFin')
+        ->setParameter('idUser', $utilisateur->getId())
+        ->setParameter('dateDebut', $dateDebut->format('Y-m-d 00:00:00'))
+        ->setParameter('dateFin', $dateFin->format('Y-m-d 23:59:59'))
+        ->orderBy('tt.dateTerminee', 'ASC')
+        ->getQuery()
+        ->getResult();
+
+    // Regrouper par date
+    $groupes = [];
+    foreach ($taches as $tache) {
+        /** @var TacheTerminee $tache */
+        $dateCle = $tache->getDateTerminee()->format('d-m-Y');
+        $groupes[$dateCle][] = $tache;
     }
+
+    // Générer toutes les dates entre début et fin
+    $periode = new \DatePeriod(
+        new \DateTime($dateDebut->format('Y-m-d')),
+        new \DateInterval('P1D'),
+        (new \DateTime($dateFin->format('Y-m-d')))->modify('+1 day')
+    );
+
+    // Construire le résultat final
+    $resultat = [];
+    $total = 0;
+
+    foreach ($periode as $date) {
+        // Ignorer samedi (6) et dimanche (0)
+        $jourSemaine = (int) $date->format('w'); // 0 = dimanche, 6 = samedi
+        if ($jourSemaine === 0 || $jourSemaine === 6) {
+            continue;
+        }
+
+        $cle = $date->format('d-m-Y');
+        $listeTaches = $groupes[$cle] ?? [];
+        $total_jour = empty($listeTaches) ? 0 : TacheTerminee::totalDuree($listeTaches);
+
+        $resultat[] = [
+            'date' => $cle,
+            'tache_terminee' => $listeTaches,
+            'total_duree' => $total_jour
+        ];
+        $total += $total_jour;
+    }
+
+    return [
+        'details' => $resultat,
+        'total' => $total
+    ];
+}
+
 
 }

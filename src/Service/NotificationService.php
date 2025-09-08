@@ -23,4 +23,9 @@ class NotificationService
         return $this->notificationRepository->countNonLuesByUtilisateur($utilisateur);
     }
 
+    public function lire(int $id): void {
+        $notification = $this->notificationRepository->find($id);
+        $this->notificationRepository->marquerCommeLue($notification);
+    }
+
 }

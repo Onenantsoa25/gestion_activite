@@ -69,7 +69,7 @@
 <body>
     {# Inclusion directe du Sidebar #}
     <div class="sidebar-fixed-desktop">
-        {% include 'components/sidebar-manager.html.twig' with {'active': 'activite'} %}
+        {% include 'components/sidebar-manager.html.twig' with {'active': 'soumises'} %}
     </div>
 
     <main class="container-fluid py-5">
@@ -80,7 +80,7 @@
             <div class="col-md-8 col-lg-6"> {# Ajusté pour correspondre à la largeur de l'image #}
                 <div class="card p-4"> {# Utilisation d'une carte pour encadrer le formulaire #}
                     <div class="card-body">
-                        <form action="/manager/modifier/tache" method="POST" >
+                        <form action="/manager/modifier/tache/collab" method="POST" >
                             <div class="mb-4">
                                 <label for="taskName" class="form-label">Tâche</label>
                                 <input type="text" class="form-control" id="taskName" value="{{tache.tache}}" name="tache" disabled>

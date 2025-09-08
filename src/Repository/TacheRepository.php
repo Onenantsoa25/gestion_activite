@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\Tache;
 use App\Entity\Activite;
+use App\Entity\TypeActivite;
 use App\Entity\Utilisateur;
 use DateTime;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
@@ -27,6 +28,90 @@ class TacheRepository extends ServiceEntityRepository
         }
     }
 
+    // public function findAllByActivite(?Activite $activite): array
+    // {
+    //     if (!$activite) {
+    //         return [];
+    //     }
+
+    //     $conn = $this->getEntityManager()->getConnection();
+
+    //     // $sql = "SELECT * FROM tache WHERE id_activite = :id_activite";
+    //     $sql = "SELECT 
+    //                 t.id_tache,
+    //                 t.tache,
+    //                 COALESCE(h.debut, t.debut) AS debut,
+    //                 COALESCE(h.date_echeance, t.date_echeance) AS date_echeance,
+    //                 t.id_utilisateur,
+    //                 t.id_activite,
+    //                 COALESCE(h.estimation, t.estimation) AS estimation
+    //             FROM tache t
+    //             LEFT JOIN historique_tache h ON t.id_tache = h.id_tache
+    //             WHERE t.id_activite = :id_activite";
+    //     $stmt = $conn->prepare($sql);
+    //     $resultSet = $stmt->executeQuery([
+    //         'id_activite' => $activite->getId(),
+    //     ]);
+
+    //     $results = $resultSet->fetchAllAssociative();
+
+    //     // Convert raw data to Tache entities if needed
+    //     return $this->getEntityManager()->getRepository(Tache::class)->findBy([
+    //         'activite' => $activite,
+    //     ]);
+    // }
+
+    // public function findAllByActivite(?Activite $activite): array
+    // {
+    //     if (!$activite) {
+    //         return [];
+    //     }
+
+    //     $conn = $this->getEntityManager()->getConnection();
+
+    //     $sql = "SELECT 
+    //                 t.id_tache,
+    //                 t.tache,
+    //                 COALESCE(h.debut, t.debut) AS debut,
+    //                 COALESCE(h.date_echeance, t.date_echeance) AS date_echeance,
+    //                 t.id_utilisateur,
+    //                 t.id_activite,
+    //                 COALESCE(h.estimation, t.estimation) AS estimation
+    //             FROM tache t
+    //             LEFT JOIN historique_tache h ON t.id_tache = h.id_tache
+    //             WHERE t.id_activite = :id_activite
+    //             AND t.id_tache NOT IN (SELECT id_tache FROM tache_supprimee)";
+
+    //     $stmt = $conn->prepare($sql);
+    //     $resultSet = $stmt->executeQuery([
+    //         'id_activite' => $activite->getId(),
+    //     ]);
+
+    //     $rows = $resultSet->fetchAllAssociative();
+    //     $em = $this->getEntityManager(); // récupérer EntityManager une seule fois
+    //     $utilisateurRepo = $em->getRepository(Utilisateur::class);
+    //     $taches = [];
+    //     foreach ($rows as $row) {
+    //         $tache = new Tache();
+    //         $tache->setId($row['id_tache']); // ⚠️ si tu n’as pas de setter pour l’ID, il faudra faire autrement
+    //         $tache->setTache($row['tache']);
+    //         $tache->setDebut(new \DateTime($row['debut']));
+    //         $tache->setDateEcheance(new \DateTime($row['date_echeance']));
+    //         $tache->setEstimation((float)$row['estimation']);
+    //         // $utilisateurRepository = new UtilisateurRepository();
+    //         if($row['id_utilisateur'] != null){
+    //             $tache->setUtilisateur($utilisateurRepo->find($row['id_utilisateur']));
+    //         }
+    //         // si tu veux lier l'utilisateur et l'activité
+    //         $tache->setActivite($activite);
+    //         // $tache->setUtilisateur(... récupérer via repository ...)
+
+    //         $taches[] = $tache;
+    //     }
+
+    //     return $taches;
+    // }
+
     public function findAllByActivite(?Activite $activite): array
     {
         if (!$activite) {
@@ -35,7 +120,38 @@ class TacheRepository extends ServiceEntityRepository
 
         $conn = $this->getEntityManager()->getConnection();
 
-        // $sql = "SELECT * FROM tache WHERE id_activite = :id_activite";
+        $sql = "SELECT 
+                    t.id_tache
+                FROM tache t
+                WHERE t.id_activite = :id_activite
+                AND t.id_tache NOT IN (SELECT id_tache FROM tache_supprimee)";
+
+        $stmt = $conn->prepare($sql);
+        $resultSet = $stmt->executeQuery([
+            'id_activite' => $activite->getId(),
+        ]);
+
+        $rows = $resultSet->fetchAllAssociative();
+        $em = $this->getEntityManager(); // récupérer EntityManager une seule fois
+        $utilisateurRepo = $em->getRepository(Utilisateur::class);
+        $taches = [];
+        foreach ($rows as $row) {
+
+            $taches[] = $this->findById($row['id_tache']);
+        }
+
+        return $taches;
+    }
+
+
+    // public function findById(int $id): ?Tache
+    // {
+    //     return $this->find($id);
+    // }
+    public function findById(int $id): ?Tache
+    {
+        $conn = $this->getEntityManager()->getConnection();
+
         $sql = "SELECT 
                     t.id_tache,
                     t.tache,
@@ -46,23 +162,28 @@ class TacheRepository extends ServiceEntityRepository
                     COALESCE(h.estimation, t.estimation) AS estimation
                 FROM tache t
                 LEFT JOIN historique_tache h ON t.id_tache = h.id_tache
-                WHERE t.id_activite = :id_activite";
+                WHERE t.id_tache = :id_tache
+                AND t.id_tache NOT IN (SELECT id_tache FROM tache_supprimee)";
+
         $stmt = $conn->prepare($sql);
-        $resultSet = $stmt->executeQuery([
-            'id_activite' => $activite->getId(),
-        ]);
+        $row = $stmt->executeQuery([
+            'id_tache' => $id,
+        ])->fetchAssociative();
 
-        $results = $resultSet->fetchAllAssociative();
+        if (!$row) {
+            return null; // aucune tâche trouvée
+        }
 
-        // Convert raw data to Tache entities if needed
-        return $this->getEntityManager()->getRepository(Tache::class)->findBy([
-            'activite' => $activite,
-        ]);
-    }
+        // On récupère l’entité Tache "classique"
+        $tache = $this->getEntityManager()->getRepository(Tache::class)->find($row['id_tache']);
+        if ($tache) {
+            // On met à jour ses propriétés avec les valeurs de l’historique
+            $tache->setDebut(new \DateTime($row['debut']));
+            $tache->setDateEcheance(new \DateTime($row['date_echeance']));
+            $tache->setEstimation((float)$row['estimation']);
+        }
 
-    public function findById(int $id): ?Tache
-    {
-        return $this->find($id);
+        return $tache;
     }
 
     public function attribuer(?int $id_tache, ?int $id_utilisateur): void
@@ -92,7 +213,8 @@ class TacheRepository extends ServiceEntityRepository
                     COALESCE(h.estimation, t.estimation) AS estimation
                 FROM tache t
                 LEFT JOIN historique_tache h ON t.id_tache = h.id_tache
-                WHERE t.id_utilisateur = :id_utilisateur";
+                WHERE t.id_utilisateur = :id_utilisateur
+                AND t.id_tache NOT IN (SELECT id_tache FROM tache_supprimee)";
         $stmt = $conn->prepare($sql);
         $resultSet = $stmt->executeQuery([
             'id_utilisateur' => $utilisateur->getId(),
@@ -225,6 +347,7 @@ class TacheRepository extends ServiceEntityRepository
                 WHERE t.id_utilisateur = :id_utilisateur
                 AND COALESCE(h.debut, t.debut) BETWEEN :start AND :end
                 AND t.id_tache NOT IN (SELECT id_tache FROM tache_terminee)
+                AND t.id_tache NOT IN (SELECT id_tache FROM tache_supprimee)
                 ORDER BY COALESCE(h.debut, t.debut) ASC";
 
         $stmt = $conn->prepare($sql);
@@ -236,7 +359,7 @@ class TacheRepository extends ServiceEntityRepository
 
         $taches = [];
         foreach ($results as $row) {
-            $taches[] = $this->find($row['id_tache']);
+            $taches[] = $this->findById($row['id_tache']);
         }
 
         return $taches;
@@ -299,6 +422,7 @@ class TacheRepository extends ServiceEntityRepository
                 WHERE t.id_utilisateur = :id_utilisateur
                 AND COALESCE(h.debut, t.debut) BETWEEN :dayStart AND :dayEnd
                 AND t.id_tache NOT IN (SELECT id_tache FROM tache_terminee)
+                AND t.id_tache NOT IN (SELECT id_tache FROM tache_supprimee)
                 ORDER BY COALESCE(h.debut, t.debut) ASC";
 
         $stmt = $conn->prepare($sql);
@@ -316,6 +440,118 @@ class TacheRepository extends ServiceEntityRepository
         return $taches;
     }
 
+    public function findTachesEnCours(Utilisateur $utilisateur): array
+    {
+        $conn = $this->getEntityManager()->getConnection();
+
+        $today = new \DateTime('today');
+
+        // Récupère toutes les taches non terminées commencées avant aujourd'hui
+        $sql = "SELECT 
+                    t.id_tache,
+                    t.tache,
+                    COALESCE(h.debut, t.debut) AS debut,
+                    COALESCE(h.estimation, t.estimation) AS estimation
+                FROM tache t
+                LEFT JOIN historique_tache h ON t.id_tache = h.id_tache
+                WHERE t.id_utilisateur = :id_utilisateur
+                AND COALESCE(h.debut, t.debut) < :todayStart
+                AND t.id_tache NOT IN (SELECT id_tache FROM tache_terminee)
+                AND t.id_tache NOT IN (SELECT id_tache FROM tache_supprimee)";
+
+        $stmt = $conn->prepare($sql);
+        $results = $stmt->executeQuery([
+            'id_utilisateur' => $utilisateur->getId(),
+            'todayStart' => $today->format('Y-m-d 00:00:00'),
+        ])->fetchAllAssociative();
+
+        $taches = [];
+        foreach ($results as $row) {
+            $debut = new \DateTime($row['debut']);
+            $estimation = (float)$row['estimation'];
+
+            $fin = $this->calculerFinTravail($debut, $estimation);
+
+            if ($fin >= $today) {
+                $taches[] = $this->find($row['id_tache']);
+            }
+        }
+
+        return $taches;
+    }
+
+/**
+ * Calcule la date de fin en tenant compte des heures de travail
+ */
+    private function calculerFinTravail(\DateTime $debut, float $heures): \DateTime
+    {
+        $fin = clone $debut;
+        $restant = $heures;
+
+        while ($restant > 0) {
+            // Si weekend, passer au lundi 7h30
+            if (in_array((int)$fin->format('N'), [6, 7])) {
+                $fin->modify('next monday 07:30');
+                continue;
+            }
+
+            // Définir plages de travail du jour
+            $matinStart = (clone $fin)->setTime(7, 30);
+            $matinEnd   = (clone $fin)->setTime(12, 0);
+            $apremStart = (clone $fin)->setTime(13, 0);
+            $apremEnd   = (clone $fin)->setTime(16, 30);
+
+            // Choisir où on est dans la journée
+            if ($fin < $matinStart) {
+                $fin = $matinStart;
+            } elseif ($fin > $matinEnd && $fin < $apremStart) {
+                $fin = $apremStart;
+            } elseif ($fin >= $apremEnd) {
+                $fin->modify('+1 day')->setTime(7, 30);
+                continue;
+            }
+
+            // Combien d'heures dispo dans ce créneau ?
+            if ($fin >= $matinStart && $fin < $matinEnd) {
+                $dispo = ($matinEnd->getTimestamp() - $fin->getTimestamp()) / 3600;
+            } else {
+                $dispo = ($apremEnd->getTimestamp() - $fin->getTimestamp()) / 3600;
+            }
+
+            if ($restant <= $dispo) {
+                $fin->modify("+{$restant} hour");
+                $restant = 0;
+            } else {
+                $fin->modify("+{$dispo} hour");
+                $restant -= $dispo;
+            }
+        }
+
+        return $fin;
+    }
+
+    public function findTachesDuJour(Utilisateur $utilisateur): array
+    {
+        // Récupérer les deux listes
+        $tachesAujourdhui = $this->findTachesDuJourParUtilisateur($utilisateur);
+        $tachesEnCours    = $this->findTachesEnCours($utilisateur);
+
+        // Fusionner les deux tableaux
+        $toutes = array_merge($tachesAujourdhui, $tachesEnCours);
+
+        // Supprimer les doublons éventuels (même id_tache)
+        $toutes = array_unique($toutes, SORT_REGULAR);
+
+        // Trier par date de début (COALESCE(h.debut, t.debut))
+        usort($toutes, function ($a, $b) {
+            $debutA = $a->getDebut(); // à adapter si tu utilises Historique
+            $debutB = $b->getDebut();
+
+            return $debutA <=> $debutB;
+        });
+
+        return $toutes;
+    }
 
     public function getBusinessDaysBetween(\DateTimeInterface $startDate, \DateTimeInterface $endDate): array
     {
@@ -374,6 +610,7 @@ class TacheRepository extends ServiceEntityRepository
                 LEFT JOIN historique_tache h ON t.id_tache = h.id_tache
                 WHERE t.id_utilisateur = :id_utilisateur
                 AND t.id_tache NOT IN (SELECT id_tache FROM tache_terminee)
+                AND t.id_tache NOT IN (SELECT id_tache FROM tache_supprimee)
                 ORDER BY COALESCE(h.debut, t.debut) ASC";
 
         $stmt = $conn->prepare($sql);
@@ -393,7 +630,7 @@ class TacheRepository extends ServiceEntityRepository
         return $taches;
     }
 
-    public function tachesNonTermineesActivite(Utilisateur $utilisateur, Activite $activite): array
+    public function tachesNonTermineesActivite(Utilisateur $utilisateur, TypeActivite $activite): array
     {
         $conn = $this->getEntityManager()->getConnection();
 
@@ -408,6 +645,21 @@ class TacheRepository extends ServiceEntityRepository
     //     ORDER BY t.debut ASC
     // ";
 
+        // $sql = "SELECT 
+        //             t.id_tache,
+        //             t.tache,
+        //             COALESCE(h.debut, t.debut) AS debut,
+        //             COALESCE(h.date_echeance, t.date_echeance) AS date_echeance,
+        //             t.id_utilisateur,
+        //             t.id_activite,
+        //             COALESCE(h.estimation, t.estimation) AS estimation
+        //         FROM tache t
+        //         LEFT JOIN historique_tache h ON t.id_tache = h.id_tache
+        //         WHERE t.id_activite = :id_activite
+        //         AND t.id_utilisateur = :id_utilisateur
+        //         AND t.id_tache NOT IN (SELECT id_tache FROM tache_terminee)
+        //         ORDER BY COALESCE(h.debut, t.debut) ASC";
+
         $sql = "SELECT 
                     t.id_tache,
                     t.tache,
@@ -418,9 +670,11 @@ class TacheRepository extends ServiceEntityRepository
                     COALESCE(h.estimation, t.estimation) AS estimation
                 FROM tache t
                 LEFT JOIN historique_tache h ON t.id_tache = h.id_tache
-                WHERE t.id_activite = :id_activite
+                JOIN activite a on t.id_activite = a.id_activite
+                WHERE a.id_type_activite = :id_activite 
                 AND t.id_utilisateur = :id_utilisateur
                 AND t.id_tache NOT IN (SELECT id_tache FROM tache_terminee)
+                AND t.id_tache NOT IN (SELECT id_tache FROM tache_supprimee)
                 ORDER BY COALESCE(h.debut, t.debut) ASC";
 
         $stmt = $conn->prepare($sql);
@@ -448,13 +702,12 @@ class TacheRepository extends ServiceEntityRepository
         $todayStart = (new \DateTime('today'))->format('Y-m-d 00:00:00');
         $todayEnd   = (new \DateTime('today'))->format('Y-m-d 23:59:59');
 
-        $sql = "
-        SELECT COALESCE(SUM(tt.temps_passe), 0) AS total_temps
-        FROM tache_terminee tt
-        INNER JOIN tache t ON t.id_tache = tt.id_tache
-        WHERE t.id_utilisateur = :id_utilisateur
-          AND tt.date_terminee BETWEEN :start AND :end
-    ";
+        $sql = "SELECT COALESCE(SUM(tt.temps_passe), 0) AS total_temps
+                FROM tache_terminee tt
+                INNER JOIN tache t ON t.id_tache = tt.id_tache
+                WHERE t.id_utilisateur = :id_utilisateur
+                    AND t.id_tache NOT IN (SELECT id_tache FROM tache_supprimee)
+                    AND tt.date_terminee BETWEEN :start AND :end";
 
         $stmt = $conn->prepare($sql);
         $result = $stmt->executeQuery([
@@ -475,13 +728,12 @@ class TacheRepository extends ServiceEntityRepository
         // Fin de semaine (dimanche 23:59:59)
         $endOfWeek = (new \DateTimeImmutable('sunday this week'))->setTime(23, 59, 59);
 
-        $sql = "
-        SELECT COALESCE(SUM(tt.temps_passe), 0) AS total_temps
-        FROM tache_terminee tt
-        INNER JOIN tache t ON t.id_tache = tt.id_tache
-        WHERE t.id_utilisateur = :id_utilisateur
-          AND tt.date_terminee BETWEEN :start AND :end
-    ";
+        $sql = "SELECT COALESCE(SUM(tt.temps_passe), 0) AS total_temps
+                FROM tache_terminee tt
+                INNER JOIN tache t ON t.id_tache = tt.id_tache
+                WHERE t.id_utilisateur = :id_utilisateur
+                    AND t.id_tache NOT IN (SELECT id_tache FROM tache_supprimee)
+                    AND tt.date_terminee BETWEEN :start AND :end";
 
         $stmt = $conn->prepare($sql);
         $result = $stmt->executeQuery([
@@ -510,7 +762,8 @@ class TacheRepository extends ServiceEntityRepository
                 LEFT JOIN historique_tache h ON t.id_tache = h.id_tache
                 WHERE t.id_utilisateur = :id_utilisateur
                 AND COALESCE(h.debut, t.debut) <= NOW()
-                AND t.id_tache NOT IN (SELECT id_tache FROM tache_terminee)";
+                AND t.id_tache NOT IN (SELECT id_tache FROM tache_terminee)
+                AND t.id_tache NOT IN (SELECT id_tache FROM tache_supprimee)";
 
         $stmt = $conn->prepare($sql);
         return (int) $stmt->executeQuery([
@@ -535,7 +788,8 @@ class TacheRepository extends ServiceEntityRepository
                 LEFT JOIN historique_tache h ON t.id_tache = h.id_tache
                 WHERE t.id_utilisateur = :id_utilisateur
                 AND (COALESCE(h.debut, t.debut) IS NULL OR COALESCE(h.debut, t.debut) > NOW())
-                AND t.id_tache NOT IN (SELECT id_tache FROM tache_terminee)";
+                AND t.id_tache NOT IN (SELECT id_tache FROM tache_terminee)
+                AND t.id_tache NOT IN (SELECT id_tache FROM tache_supprimee)";
 
         $stmt = $conn->prepare($sql);
         return (int) $stmt->executeQuery([
@@ -563,7 +817,8 @@ class TacheRepository extends ServiceEntityRepository
                 INNER JOIN tache t ON t.id_tache = tt.id_tache
                 LEFT JOIN historique_tache h ON t.id_tache = h.id_tache
                 WHERE t.id_utilisateur = :id_utilisateur
-                AND tt.date_terminee BETWEEN :start AND :end";
+                    AND t.id_tache NOT IN (SELECT id_tache FROM tache_supprimee)
+                    AND tt.date_terminee BETWEEN :start AND :end";
 
         $stmt = $conn->prepare($sql);
         return (int) $stmt->executeQuery([
@@ -591,7 +846,8 @@ class TacheRepository extends ServiceEntityRepository
                 AND t.id_tache NOT IN (
                     SELECT id_tache 
                     FROM tache_terminee
-                )";
+                )
+                AND t.id_tache NOT IN (SELECT id_tache FROM tache_supprimee)";
 
         $stmt = $conn->prepare($sql);
         return (int) $stmt->executeQuery([
@@ -639,12 +895,11 @@ class TacheRepository extends ServiceEntityRepository
     {
         $conn = $this->getEntityManager()->getConnection();
 
-        $sql = "
-            SELECT COUNT(*) 
+        $sql = "SELECT COUNT(*) 
             FROM tache t
             WHERE t.id_activite = :id_activite
             AND t.id_tache NOT IN (SELECT id_tache FROM tache_terminee)
-        ";
+            AND t.id_tache NOT IN (SELECT id_tache FROM tache_supprimee)";
 
         $stmt = $conn->prepare($sql);
         $count = $stmt->executeQuery([
@@ -662,12 +917,11 @@ class TacheRepository extends ServiceEntityRepository
         $todayStart = (new \DateTime('today'))->format('Y-m-d 00:00:00');
         $todayEnd   = (new \DateTime('today'))->format('Y-m-d 23:59:59');
 
-        $sql = "
-        SELECT COALESCE(SUM(tt.temps_passe), 0) AS total_temps
+        $sql = "SELECT COALESCE(SUM(tt.temps_passe), 0) AS total_temps
         FROM tache_terminee tt
         INNER JOIN tache t ON t.id_tache = tt.id_tache
         WHERE tt.date_terminee BETWEEN :start AND :end
-    ";
+        AND t.id_tache NOT IN (SELECT id_tache FROM tache_supprimee)";
 
         $stmt = $conn->prepare($sql);
         $result = $stmt->executeQuery([
@@ -687,12 +941,11 @@ class TacheRepository extends ServiceEntityRepository
         // Fin de semaine (dimanche 23:59:59)
         $endOfWeek = (new \DateTimeImmutable('sunday this week'))->setTime(23, 59, 59);
 
-        $sql = "
-        SELECT COALESCE(SUM(tt.temps_passe), 0) AS total_temps
-        FROM tache_terminee tt
-        INNER JOIN tache t ON t.id_tache = tt.id_tache
-        WHERE tt.date_terminee BETWEEN :start AND :end
-    ";
+        $sql = "SELECT COALESCE(SUM(tt.temps_passe), 0) AS total_temps
+                FROM tache_terminee tt
+                INNER JOIN tache t ON t.id_tache = tt.id_tache
+                WHERE tt.date_terminee BETWEEN :start AND :end
+                AND t.id_tache NOT IN (SELECT id_tache FROM tache_supprimee)";
 
         $stmt = $conn->prepare($sql);
         $result = $stmt->executeQuery([
@@ -718,7 +971,8 @@ class TacheRepository extends ServiceEntityRepository
                 FROM tache t
                 LEFT JOIN historique_tache h ON t.id_tache = h.id_tache
                 WHERE COALESCE(h.debut, t.debut) <= NOW()
-                AND t.id_tache NOT IN (SELECT id_tache FROM tache_terminee)";
+                AND t.id_tache NOT IN (SELECT id_tache FROM tache_terminee)
+                AND t.id_tache NOT IN (SELECT id_tache FROM tache_supprimee)";
 
         $stmt = $conn->prepare($sql);
         return (int) $stmt->executeQuery()->fetchOne();
@@ -739,7 +993,8 @@ class TacheRepository extends ServiceEntityRepository
                 FROM tache t
                 LEFT JOIN historique_tache h ON t.id_tache = h.id_tache
                 WHERE (COALESCE(h.debut, t.debut) IS NULL OR COALESCE(h.debut, t.debut) > NOW())
-                AND t.id_tache NOT IN (SELECT id_tache FROM tache_terminee)";
+                AND t.id_tache NOT IN (SELECT id_tache FROM tache_terminee)
+                AND t.id_tache NOT IN (SELECT id_tache FROM tache_supprimee)";
 
         $stmt = $conn->prepare($sql);
         return (int) $stmt->executeQuery()->fetchOne();
@@ -763,7 +1018,8 @@ class TacheRepository extends ServiceEntityRepository
                 FROM tache_terminee tt
                 INNER JOIN tache t ON t.id_tache = tt.id_tache
                 LEFT JOIN historique_tache h ON t.id_tache = h.id_tache
-                WHERE tt.date_terminee BETWEEN :start AND :end";
+                WHERE tt.date_terminee BETWEEN :start AND :end
+                AND t.id_tache NOT IN (SELECT id_tache FROM tache_supprimee)";
 
         $stmt = $conn->prepare($sql);
         return (int) $stmt->executeQuery([
@@ -797,6 +1053,7 @@ class TacheRepository extends ServiceEntityRepository
                 INNER JOIN activite a ON t.id_activite = a.id_activite
                 LEFT JOIN historique_tache h ON t.id_tache = h.id_tache
                 WHERE a.id_type_activite = :id_type_activite
+                AND t.id_tache NOT IN (SELECT id_tache FROM tache_supprimee)
                 ORDER BY COALESCE(h.debut, t.debut) ASC";
 
         $stmt = $conn->prepare($sql);
@@ -814,12 +1071,13 @@ class TacheRepository extends ServiceEntityRepository
 
     public function modifier(Tache $tache): void {
         $conn = $this->getEntityManager()->getConnection();
-        $sql = "INSERT INTO historique_tache(date_echeance, id_tache, estimation) VALUES (:echeance, :id_tache, :estimation)";
+        $sql = "INSERT INTO historique_tache(date_echeance, id_tache, estimation, debut) VALUES (:echeance, :id_tache, :estimation, :debut)";
         $stmt = $conn->prepare($sql);
         $stmt->executeStatement([
-            'echeance' => $tache->getDateEcheance(),
+            'echeance' => $tache->getDateEcheance()->format('Y-m-d H:i:s'),
             'id_tache' => $tache->getId(),
             'estimation' => $tache->getEstimation(),
+            'debut' => $tache->getDebut()->format('Y-m-d H:i:s'),
         ]);
     }
 
@@ -832,6 +1090,63 @@ class TacheRepository extends ServiceEntityRepository
             'echeance' => $tache->getDateEcheance()?->format('Y-m-d H:i:s'),
             'id_tache' => $tache->getId(),
             'estimation' => $tache->getEstimation(),
+        ]);
+    }
+
+    public function get_taches_retards(Utilisateur $utilisateur): array {
+        $conn = $this->getEntityManager()->getConnection();
+
+        $day = new \DateTime();
+
+        // $sql = "
+        //     SELECT * 
+        //     FROM tache t
+        //     WHERE t.id_utilisateur = :id_utilisateur
+        //     AND t.debut BETWEEN :dayStart AND :dayEnd
+        //     AND t.id_tache NOT IN (SELECT id_tache FROM tache_terminee)
+        //     ORDER BY t.debut ASC
+        // ";
+
+        $sql = "SELECT 
+                    t.id_tache,
+                    t.tache,
+                    COALESCE(h.debut, t.debut) AS debut,
+                    COALESCE(h.date_echeance, t.date_echeance) AS date_echeance,
+                    t.id_utilisateur,
+                    t.id_activite,
+                    COALESCE(h.estimation, t.estimation) AS estimation
+                FROM tache t
+                LEFT JOIN historique_tache h ON t.id_tache = h.id_tache
+                WHERE t.id_utilisateur = :id_utilisateur
+                AND COALESCE(h.debut, t.debut) BEFORE :jour
+                AND t.id_tache NOT IN (SELECT id_tache FROM tache_terminee)
+                AND t.id_tache NOT IN (SELECT id_tache FROM tache_supprimee)
+                ORDER BY COALESCE(h.debut, t.debut) ASC";
+
+        $stmt = $conn->prepare($sql);
+        $results = $stmt->executeQuery([
+            'id_utilisateur' => $utilisateur->getId(),
+            'jour' => $day
+        ])->fetchAllAssociative();
+
+        $taches = [];
+        foreach ($results as $row) {
+            $taches[] = $this->find($row['id_tache']);
+        }
+
+        return $taches;
+    }
+
+    public function supprimer(int $id_tache): void
+    {
+        $conn = $this->getEntityManager()->getConnection();
+        $sql = "INSERT INTO tache_supprimee (id_tache, date_suppression) 
+                VALUES (:id_tache, :date_suppression)";
+        
+        $stmt = $conn->prepare($sql);
+        $stmt->executeStatement([
+            'id_tache' => $id_tache,
+            'date_suppression' => (new \DateTime())->format('Y-m-d H:i:s'),
         ]);
     }
 

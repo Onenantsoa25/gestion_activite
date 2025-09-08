@@ -28,9 +28,11 @@ class ActiviteController extends AbstractController
 
 
     #[Route('/manager/activite', name: 'insert_activite_manager', methods: ['GET'])]
-    public function manager(): Response {
+    public function manager(SessionInterface $session): Response {
         $this->denyAccessUnlessGranted('ROLE_MANAGER');
-        
+        if($session->get('activite') !== null){
+            $session->remove('activite');
+        }
         // @var TypeActiviteService[] $types
         $types = $this->typeActiviteService->findAll();
 
@@ -83,7 +85,7 @@ class ActiviteController extends AbstractController
             $this->addFlash('error', 'Aucune activité trouvée dans la session.');
             return $this->redirectToRoute('insert_activite_manager'); // ou une autre page d’accueil
         }
-
+        // $session->remove('activite');
         $taches = $this->tacheService->findAllByActivite($activite);
 
         return $this->render('manager/taches-activite-ajout.html.twig', [
@@ -103,8 +105,12 @@ class ActiviteController extends AbstractController
     }
 
     #[Route('/manager/activites', name: 'liste_activite_manager', methods: ['GET'])]
-    public function activites_manager(): Response {
+    public function activites_manager(SessionInterface $session): Response {
         $this->denyAccessUnlessGranted('ROLE_MANAGER');
+
+        if($session->get('activite') !== null){
+            $session->remove('activite');
+        }
 
         $activites = $this->activiteService->findAllNonTerminee();
         return $this->render('manager/activite-non-terminee.html.twig', [
@@ -114,12 +120,15 @@ class ActiviteController extends AbstractController
     }
 
     #[Route('/manager/activite/taches/{id}', name: 'taches_activite_manager', methods: ['GET'])]
-    public function taches_activite(int $id): Response {
+    public function taches_activite(int $id, SessionInterface $session): Response {
         $this->denyAccessUnlessGranted('ROLE_MANAGER');
         $activite = $this->activiteService->findById($id);
+        $session->set('activite', $activite);
+
         $taches = $this->tacheService->findAllByActivite($activite);
         return $this->render('manager/taches-activite.html.twig', [
             'taches' => $taches,
+            'activite' => $activite,
         ]);
     }
 
@@ -138,7 +147,7 @@ class ActiviteController extends AbstractController
         $type_id = $request->get('type');
         $date = $request->get('date');
 
-        $session->set('active_activite', "creation");
+        // $session->set('active_activite', "creation");
 
         $activite = new Activite();
         $activite->setActivite($nom);
@@ -171,15 +180,27 @@ class ActiviteController extends AbstractController
 
         $taches = $this->tacheService->findAllByActivite($activite);
 
-        return $this->render('collaborateur/ajout-taches.html.twig', [
-            'taches' => $taches,
-            'activite' => $activite
-        ]);
+        if($activite->isEstValide()){
+            return $this->render('collaborateur/ajout-taches.html.twig', [
+                'taches' => $taches,
+                'activite' => $activite
+            ]);
+        } else {
+            return $this->render('manager/taches-activite-soumise.html.twig', [
+                'taches' => $taches,
+                'activite' => $activite,
+            ]);
+        }
+
     }
 
     #[Route('/manager/activites/soumises', name: 'liste_non_validees', methods: ['GET'])]
-    public function liste_non_validees(): Response {
+    public function liste_non_validees(SessionInterface $session): Response {
         $this->denyAccessUnlessGranted('ROLE_MANAGER');
+
+        if($session->get('activite') !== null){
+            $session->remove('activite');
+        }
 
         return $this->render('manager/activites-soumises.html.twig', [
             'activites' => $this->activiteService->findAllNonValidees(),
@@ -205,6 +226,26 @@ class ActiviteController extends AbstractController
         $this->denyAccessUnlessGranted('ROLE_MANAGER');
         $this->activiteService->commencer($id);
         return $this->redirectToRoute('liste_activite_manager');
+    }
+
+    #[Route('/manager/modifier/activite/{id}', name: 'modification_activite_page', methods: ['GET'])]
+    public function modification_page(int $id): Response {
+        $this->denyAccessUnlessGranted('ROLE_MANAGER');
+        $activite = $this->activiteService->findById($id);
+        return $this->render('manager/modification-activite.html.twig', [
+            'activite' => $activite,
+        ]);
+    }
+
+    #[Route('/manager/modifier/activite', name: 'modification_activite', methods: ['POST'])]
+    public function modification(Request $request): Response {
+        $this->denyAccessUnlessGranted('ROLE_COLLABORATEUR');
+
+        $activite = $this->activiteService->findById($request->get('id_activite'));
+        $activite->setDateEcheance(new \DateTime($request->get('date_echeance')));
+        $activite->setActivite($request->get('activite'));
+
+        return $this->redirectToRoute('liste_non_validees');
     }
 
 }

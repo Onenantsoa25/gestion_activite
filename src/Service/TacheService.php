@@ -7,6 +7,7 @@ use App\Entity\Tache;
 use App\Entity\Activite;
 use App\Entity\Notification;
 use App\Entity\TacheTerminee;
+use App\Entity\TypeActivite;
 use App\Entity\Utilisateur;
 use App\Repository\NotificationRepository;
 use App\Repository\TacheTermineeRepository;
@@ -104,7 +105,7 @@ class TacheService
 
     public function findTachesDuJourParUtilisateur(Utilisateur $utilisateur): array
     {
-        return $this->tacheRepository->findTachesDuJourParUtilisateur($utilisateur);
+        return $this->tacheRepository->findTachesDuJour($utilisateur);
     }
 
     public function findPlanningDates(\DateTimeInterface $startDate, \DateTimeInterface $endDate, Utilisateur $utilisateur): array
@@ -122,7 +123,7 @@ class TacheService
         return $this->tacheRepository->tachesNonTerminees($utilisateur);
     }
 
-    public function tachesNonTermineesActivite(Utilisateur $utilisateur, Activite $activite): array
+    public function tachesNonTermineesActivite(Utilisateur $utilisateur, TypeActivite $activite): array
     {
         return $this->tacheRepository->tachesNonTermineesActivite($utilisateur, $activite);
     }
@@ -247,9 +248,17 @@ class TacheService
     }
 
     public function replanifier(int $id_tache, \DateTimeInterface $dateDebut): void {
-        $tache = $this->tacheRepository->find($id_tache);
+        $tache = $this->tacheRepository->findById($id_tache);
         $tache->setDebut($dateDebut);
         $this->tacheRepository->replanifier($tache);
+    }
+
+    public function modifier(Tache $tache): void {
+        $this->tacheRepository->modifier($tache);
+    }
+
+    public function supprimer(int $id_tache): void {
+        $this->tacheRepository->supprimer($id_tache);
     }
 
 }

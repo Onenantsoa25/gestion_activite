@@ -93,6 +93,12 @@
                 margin-left: 0 !important; /* Supprime la marge auto sur petits écrans */
             }
         }
+
+        .table {
+            max-height: 400px;  /* Hauteur fixe ou maximale selon ton choix */
+            overflow-y: auto;   /* Scroll vertical si contenu dépasse */
+        }
+
     </style>
     {% block stylesheets %}{% endblock %}
 </head>
@@ -106,32 +112,25 @@
         <h1 class="mb-5 text-center">Rapport et récapitulatif d'activité</h1> {# Marge plus grande sous le titre #}
 
         {# Section des filtres #}
-        <div class="row g-3 mb-5 align-items-center justify-content-center filter-row-responsive"> {# g-3 pour un espacement plus compact, justify-content-center pour centrer #}
-            <form action="/collaborateur/rapport" method="GET">
-                <div class="col-auto">
-                    <label for="startDate" class="visually-hidden">Date de début</label>
-                    <input type="date" class="form-control shadow-sm" id="startDate" name="debut" >
-                </div>
-                <div class="col-auto d-flex align-items-center">
-                    <span class="text-muted">à</span>
-                </div>
-                <div class="col-auto">
-                    <label for="endDate" class="visually-hidden">Date de fin</label>
-                    <input type="date" class="form-control shadow-sm" id="endDate" name="fin" >
-                </div>
-                {# <div class="col-auto">
-                    <label for="activityType" class="visually-hidden">Type d'activité</label>
-                    <select class="form-select shadow-sm" id="activityType" aria-label="Type d'activité">
-                        <option selected>Type d'activité</option>
-                        <option value="1">Activité A</option>
-                        <option value="2">Activité B</option>
-                        <option value="3">Activité C</option>
-                    </select>
-                </div> #}
-                <div class="col-auto"> {# Plus besoin de ms-auto si on centre le row #}
-                    <button type="submit" class="btn btn-primary" id="filterButton">Voir</button>
-                </div>
-            </form>
+        <div class="row mb-0">
+            <div class="col-12 d-flex justify-content-center">
+                <form class="d-flex flex-wrap align-items-center justify-content-center" action="/collaborateur/rapport" method="GET">
+                    <div class="me-2 mb-2">
+                        <label for="startDate" class="visually-hidden">Date de début</label>
+                        <input type="date" class="form-control" id="startDate" name="debut" placeholder="Début">
+                    </div>
+                    <div class="me-2 mb-2 d-flex align-items-center">
+                        <span class="text-muted">à</span>
+                    </div>
+                    <div class="me-2 mb-2">
+                        <label for="endDate" class="visually-hidden">Date de fin</label>
+                        <input type="date" class="form-control" id="endDate" name="fin" placeholder="Fin">
+                    </div>
+                    <div class="mb-2">
+                        <button type="submit" class="btn btn-primary">Voir</button>
+                    </div>
+                </form>
+            </div>
         </div>
 
         <div class="row g-4">
@@ -140,8 +139,8 @@
                 <div class="card h-100">
                     <div class="card-body p-0">
                         <h5 class="card-title mb-3 px-4 pt-4 text-center">Détails du rapport</h5>
-                        <div class="table-responsive">
-                            <table class="table table-hover mb-0">
+                        <div class="table-responsive" style="max-height: 477px;  overflow-y: auto; ">
+                            <table class="table table-hover mb-0" >
                                 <thead>
                                     <tr>
                                         <th scope="col" class="table-header-gray">Date</th>
@@ -157,10 +156,10 @@
                                         {# Première ligne avec la date #}
                                         {% for tache in groupe.tache_terminee %}
                                             <tr>
-                                                {% if loop.first %}
+                                                {% if loop.first or groupe.tache_terminee|length <= 1 %}
                                                     <td class="align-middle">{{ groupe.date }}</td>
-                                                {% else %}
-                                                    <td class="align-middle"></td>
+                                                {% else  %}
+                                                    <td class="align-middle">{{ groupe.date }}</td>
                                                 {% endif %}
                                                 <td class="align-middle">{{ tache.tache.tache }}</td>
                                                 <td class="align-middle">{{ tache.tache.activite.activite }}</td>
@@ -187,6 +186,9 @@
 
                                         {# Ligne de total par jour #}
                                         <tr class="table-total-row">
+                                            {% if groupe.tache_terminee|length <= 0 %}
+                                                <td class="align-middle">{{ groupe.date }}</td>
+                                            {% endif %}
                                             <td colspan="2" class="text-end">Total</td>
                                             <td class="align-middle">{{ groupe.total_duree }}</td>
                                             <td colspan="2"></td>
@@ -214,9 +216,27 @@
                 <button type="button" class="btn btn-primary" id="exportButton_excel">Exporter-excel</button>
             </div>
         </div>
-
+        <h2>Representation graphique</h2>
+        <div class="row mt-5">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title text-center">Évolution des temps par jour</h5>
+                        <canvas id="rapportChart" height="120"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
         {% block page_content %}{% endblock %}
     </main>
+
+<script>
+    // Récupération des données envoyées par Symfony
+    let labels = {{ taches.details|map(groupe => groupe.date)|json_encode|raw }};
+    console.log(labels);
+    let data   = {{ taches.details|map(groupe => groupe.total_duree)|json_encode|raw }};
+</script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <!-- Bootstrap JS CDN -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
@@ -313,6 +333,61 @@ document.getElementById('exportButton_excel').addEventListener('click', function
         })
         .catch(err => alert(err.message));
 });
+
+
+const ctx = document.getElementById('rapportChart').getContext('2d');
+
+new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: labels, // Les dates
+        datasets: [{
+            label: 'Durée totale (heures)', // ou minutes selon ton modèle
+            data: data,
+            borderColor: 'rgba(75, 192, 192, 1)',
+            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+            fill: true,
+            tension: 0.3, // courbe arrondie
+            pointRadius: 5,
+            pointHoverRadius: 7
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                display: true,
+                position: 'top',
+            },
+            tooltip: {
+                mode: 'index',
+                intersect: false,
+            }
+        },
+        interaction: {
+            mode: 'nearest',
+            axis: 'x',
+            intersect: false
+        },
+        scales: {
+            x: {
+                title: {
+                    display: true,
+                    text: 'Date'
+                }
+            },
+            y: {
+                title: {
+                    display: true,
+                    text: 'Durée totale'
+                },
+                beginAtZero: true
+            }
+        }
+    }
+});
+
+
     </script>
 </body>
 </html>

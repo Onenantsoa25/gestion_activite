@@ -100,12 +100,18 @@
                                             <button type="button" class="btn btn-sm btn-primary mark-as-read-btn">Planifier</button>
                                         </a>
                                     </div>
-                                {% elseif notification.typeNotif == "tache" %}
+                                {% elseif notification.typeNotif == "changement" %}
                                     <div class="notification-actions">
-                                        <button type="button" class="btn btn-sm btn-primary mark-as-read-btn">Marquez comme lue</button>
+                                        <a href="/notification/lue/{{notification.idNotification}}" >
+                                            <button type="button" class="btn btn-sm btn-primary mark-as-read-btn">Marquez comme lue</button>
+                                        </a>
                                     </div>
                                 {% endif %}
                             </div>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info text-center">
+                            Aucune notification pour le moment.
                         </div>
                     {% endfor %}
                     {# <div class="notification-card" data-notification-id="1">

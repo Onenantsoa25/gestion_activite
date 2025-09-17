@@ -15,7 +15,7 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(name: 'id_utilisateur', type: 'integer')]
     private $id;
 
-    #[ORM\Column(type: 'integer', unique: true)]
+    #[ORM\Column(name:'matricule', type: 'integer', unique: true)]
     private $matricule;
 
     #[ORM\Column(name: 'mot_de_passe', type: 'string')]

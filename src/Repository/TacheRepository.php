@@ -15,9 +15,12 @@ use Doctrine\Persistence\ManagerRegistry;
  */
 class TacheRepository extends ServiceEntityRepository
 {
-    public function __construct(ManagerRegistry $registry)
+    private UtilisateurRepository $utilisateurRepository;
+    public function __construct(ManagerRegistry $registry, UtilisateurRepository $utilisateurRepository)
     {
         parent::__construct($registry, Tache::class);
+        $this->utilisateurRepository = $utilisateurRepository;
+
     }
 
     public function insertion_manager(?Tache $tache): void
@@ -157,11 +160,15 @@ class TacheRepository extends ServiceEntityRepository
                     t.tache,
                     COALESCE(h.debut, t.debut) AS debut,
                     COALESCE(h.date_echeance, t.date_echeance) AS date_echeance,
-                    t.id_utilisateur,
+                    t.id_utilisateur as id_utilisateur,
                     t.id_activite,
                     COALESCE(h.estimation, t.estimation) AS estimation
                 FROM tache t
-                LEFT JOIN historique_tache h ON t.id_tache = h.id_tache
+                LEFT JOIN historique_tache h ON h.id_changement = (
+                        SELECT MAX(h2.id_changement) 
+                        FROM historique_tache h2 
+                        WHERE h2.id_tache = t.id_tache
+                )
                 WHERE t.id_tache = :id_tache
                 AND t.id_tache NOT IN (SELECT id_tache FROM tache_supprimee)";
 
@@ -169,6 +176,9 @@ class TacheRepository extends ServiceEntityRepository
         $row = $stmt->executeQuery([
             'id_tache' => $id,
         ])->fetchAssociative();
+            // echo "utilisateur".( (int) $row['id_utilisateur']);
+        // dump($row);
+        // die();
 
         if (!$row) {
             return null; // aucune tâche trouvée
@@ -178,9 +188,11 @@ class TacheRepository extends ServiceEntityRepository
         $tache = $this->getEntityManager()->getRepository(Tache::class)->find($row['id_tache']);
         if ($tache) {
             // On met à jour ses propriétés avec les valeurs de l’historique
-            $tache->setDebut(new \DateTime($row['debut']));
+            // $tache->setDebut(new \DateTime($row['debut']));
+            $tache->setDebut($row['debut'] !== null ? new \DateTime($row['debut']) : null);
             $tache->setDateEcheance(new \DateTime($row['date_echeance']));
             $tache->setEstimation((float)$row['estimation']);
+            $tache->setUtilisateur($this->utilisateurRepository->findById((int) $row['id_utilisateur']));
         }
 
         return $tache;
@@ -212,7 +224,11 @@ class TacheRepository extends ServiceEntityRepository
                     t.id_activite,
                     COALESCE(h.estimation, t.estimation) AS estimation
                 FROM tache t
-                LEFT JOIN historique_tache h ON t.id_tache = h.id_tache
+                LEFT JOIN historique_tache h ON h.id_changement = (
+                        SELECT MAX(h2.id_changement) 
+                        FROM historique_tache h2 
+                        WHERE h2.id_tache = t.id_tache
+                )
                 WHERE t.id_utilisateur = :id_utilisateur
                 AND t.id_tache NOT IN (SELECT id_tache FROM tache_supprimee)";
         $stmt = $conn->prepare($sql);
@@ -339,11 +355,15 @@ class TacheRepository extends ServiceEntityRepository
                     t.tache,
                     COALESCE(h.debut, t.debut) AS debut,
                     COALESCE(h.date_echeance, t.date_echeance) AS date_echeance,
-                    t.id_utilisateur,
+                    t.id_utilisateur as id_utilisateur,
                     t.id_activite,
                     COALESCE(h.estimation, t.estimation) AS estimation
                 FROM tache t
-                LEFT JOIN historique_tache h ON t.id_tache = h.id_tache
+                LEFT JOIN historique_tache h ON h.id_changement = (
+                        SELECT MAX(h2.id_changement) 
+                        FROM historique_tache h2 
+                        WHERE h2.id_tache = t.id_tache
+                )
                 WHERE t.id_utilisateur = :id_utilisateur
                 AND COALESCE(h.debut, t.debut) BETWEEN :start AND :end
                 AND t.id_tache NOT IN (SELECT id_tache FROM tache_terminee)
@@ -417,8 +437,12 @@ class TacheRepository extends ServiceEntityRepository
                     t.id_utilisateur,
                     t.id_activite,
                     COALESCE(h.estimation, t.estimation) AS estimation
-                FROM tache t
-                LEFT JOIN historique_tache h ON t.id_tache = h.id_tache
+                                FROM tache t
+                                LEFT JOIN historique_tache h ON h.id_changement = (
+                            SELECT MAX(h2.id_changement) 
+                            FROM historique_tache h2 
+                            WHERE h2.id_tache = t.id_tache
+                    ) 
                 WHERE t.id_utilisateur = :id_utilisateur
                 AND COALESCE(h.debut, t.debut) BETWEEN :dayStart AND :dayEnd
                 AND t.id_tache NOT IN (SELECT id_tache FROM tache_terminee)
@@ -434,7 +458,7 @@ class TacheRepository extends ServiceEntityRepository
 
         $taches = [];
         foreach ($results as $row) {
-            $taches[] = $this->find($row['id_tache']);
+            $taches[] = $this->findById($row['id_tache']);
         }
 
         return $taches;
@@ -453,7 +477,11 @@ class TacheRepository extends ServiceEntityRepository
                     COALESCE(h.debut, t.debut) AS debut,
                     COALESCE(h.estimation, t.estimation) AS estimation
                 FROM tache t
-                LEFT JOIN historique_tache h ON t.id_tache = h.id_tache
+                LEFT JOIN historique_tache h ON h.id_changement = (
+                        SELECT MAX(h2.id_changement) 
+                        FROM historique_tache h2 
+                        WHERE h2.id_tache = t.id_tache
+                )
                 WHERE t.id_utilisateur = :id_utilisateur
                 AND COALESCE(h.debut, t.debut) < :todayStart
                 AND t.id_tache NOT IN (SELECT id_tache FROM tache_terminee)
@@ -607,7 +635,11 @@ class TacheRepository extends ServiceEntityRepository
                     t.id_activite,
                     COALESCE(h.estimation, t.estimation) AS estimation
                 FROM tache t
-                LEFT JOIN historique_tache h ON t.id_tache = h.id_tache
+                LEFT JOIN historique_tache h ON h.id_changement = (
+                        SELECT MAX(h2.id_changement) 
+                        FROM historique_tache h2 
+                        WHERE h2.id_tache = t.id_tache
+                )
                 WHERE t.id_utilisateur = :id_utilisateur
                 AND t.id_tache NOT IN (SELECT id_tache FROM tache_terminee)
                 AND t.id_tache NOT IN (SELECT id_tache FROM tache_supprimee)
@@ -669,7 +701,11 @@ class TacheRepository extends ServiceEntityRepository
                     t.id_activite,
                     COALESCE(h.estimation, t.estimation) AS estimation
                 FROM tache t
-                LEFT JOIN historique_tache h ON t.id_tache = h.id_tache
+                LEFT JOIN historique_tache h ON h.id_changement = (
+                        SELECT MAX(h2.id_changement) 
+                        FROM historique_tache h2 
+                        WHERE h2.id_tache = t.id_tache
+                )
                 JOIN activite a on t.id_activite = a.id_activite
                 WHERE a.id_type_activite = :id_activite 
                 AND t.id_utilisateur = :id_utilisateur
@@ -1073,12 +1109,25 @@ class TacheRepository extends ServiceEntityRepository
         $conn = $this->getEntityManager()->getConnection();
         $sql = "INSERT INTO historique_tache(date_echeance, id_tache, estimation, debut) VALUES (:echeance, :id_tache, :estimation, :debut)";
         $stmt = $conn->prepare($sql);
+        if($tache->getDebut() == null){
+            // echo "null";
+            // die();
         $stmt->executeStatement([
-            'echeance' => $tache->getDateEcheance()->format('Y-m-d H:i:s'),
-            'id_tache' => $tache->getId(),
-            'estimation' => $tache->getEstimation(),
-            'debut' => $tache->getDebut()->format('Y-m-d H:i:s'),
-        ]);
+                'echeance' => $tache->getDateEcheance()->format('Y-m-d H:i:s'),
+                'id_tache' => $tache->getId(),
+                'estimation' => $tache->getEstimation(),
+                'debut' => null,
+            ]);            
+        } else {
+            // echo "tsy null";
+            // die();
+            $stmt->executeStatement([
+                'echeance' => $tache->getDateEcheance()->format('Y-m-d H:i:s'),
+                'id_tache' => $tache->getId(),
+                'estimation' => $tache->getEstimation(),
+                'debut' => $tache->getDebut()->format('Y-m-d H:i:s'),
+            ]);
+        }
     }
 
     public function replanifier(Tache $tache): void {

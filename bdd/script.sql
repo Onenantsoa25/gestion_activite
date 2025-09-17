@@ -18,3 +18,8 @@ INSERT INTO type_activite (type_activite) VALUES
 
 INSERT INTO utilisateur (matricule, mot_de_passe, id_role)
 VALUES (1003, '$2y$13$u9M8K1d7vK3HgIhK5eO8qeRj6YbI9ZrO9plhQJ0BfW7qzPqQ6tF3a', 2);
+
+INSERT INTO type_anomalie (type_anomalie) VALUES 
+("Oublie de saisie"), 
+("surcharge"),
+("sous-activite");

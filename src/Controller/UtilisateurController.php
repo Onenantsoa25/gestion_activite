@@ -70,51 +70,51 @@ class UtilisateurController extends AbstractController
     }
 
     #[Route('/collaborateur/rapport', name: 'rapport_collab', methods: ['GET'])]
-public function get_rapport(Request $request): Response 
-{
-    $this->denyAccessUnlessGranted('ROLE_COLLABORATEUR');
+    public function get_rapport(Request $request): Response 
+    {
+        $this->denyAccessUnlessGranted('ROLE_COLLABORATEUR');
 
-    // Récupérer les valeurs brutes
-    $debutRaw = $request->get('debut');
-    $finRaw = $request->get('fin');
+        // Récupérer les valeurs brutes
+        $debutRaw = $request->get('debut');
+        $finRaw = $request->get('fin');
 
-    // ⚡ Transformer en DateTimeImmutable ou null si invalide
-    $debut = \DateTimeImmutable::createFromFormat('Y-m-d', $debutRaw) ?: null;
-    $fin = \DateTimeImmutable::createFromFormat('Y-m-d', $finRaw) ?: null;
+        // ⚡ Transformer en DateTimeImmutable ou null si invalide
+        $debut = \DateTimeImmutable::createFromFormat('Y-m-d', $debutRaw) ?: null;
+        $fin = \DateTimeImmutable::createFromFormat('Y-m-d', $finRaw) ?: null;
 
-    $tacheTerminee = $this->tacheService->rapportDates($this->getUser(), $debut, $fin);
+        $tacheTerminee = $this->tacheService->rapportDates($this->getUser(), $debut, $fin);
 
-    return $this->render('collaborateur/rapport-recapitulatif.html.twig', [
-        'taches' => $tacheTerminee,
-        'debut' => $debut ? $debut->format('Y-m-d') : null,
-        'fin' => $fin ? $fin->format('Y-m-d') : null,
-    ]);
-    // On suppose que $debut et $fin sont peut-être null au départ
+        return $this->render('collaborateur/rapport-recapitulatif.html.twig', [
+            'taches' => $tacheTerminee,
+            'debut' => $debut ? $debut->format('Y-m-d') : null,
+            'fin' => $fin ? $fin->format('Y-m-d') : null,
+        ]);
+        // On suppose que $debut et $fin sont peut-être null au départ
 
-// if ($debut === null && $fin === null) {
-//     // Cas 1 : début et fin null → on prend la semaine en cours
-//     $debut = new \DateTimeImmutable('monday this week');
-//     $fin   = new \DateTimeImmutable('friday this week');
+    // if ($debut === null && $fin === null) {
+    //     // Cas 1 : début et fin null → on prend la semaine en cours
+    //     $debut = new \DateTimeImmutable('monday this week');
+    //     $fin   = new \DateTimeImmutable('friday this week');
 
-// } elseif ($debut === null && $fin !== null) {
-//     // Cas 2 : seulement début null → semaine de fin
-//     $debut = $fin->modify('monday this week');
-//     $fin   = $fin->modify('friday this week');
+    // } elseif ($debut === null && $fin !== null) {
+    //     // Cas 2 : seulement début null → semaine de fin
+    //     $debut = $fin->modify('monday this week');
+    //     $fin   = $fin->modify('friday this week');
 
-// } elseif ($debut !== null && $fin === null) {
-//     // Cas 3 : seulement fin null → semaine de début
-//     $debut = $debut->modify('monday this week');
-//     $fin   = $debut->modify('friday this week');
-// }
+    // } elseif ($debut !== null && $fin === null) {
+    //     // Cas 3 : seulement fin null → semaine de début
+    //     $debut = $debut->modify('monday this week');
+    //     $fin   = $debut->modify('friday this week');
+    // }
 
-// // Cas 4 : si les deux sont remplis → on ne touche à rien
+    // // Cas 4 : si les deux sont remplis → on ne touche à rien
 
-// return $this->render('collaborateur/rapport-recapitulatif.html.twig', [
-//     'taches' => $tacheTerminee,
-//     'debut'  => $debut ? $debut->format('Y-m-d') : null,
-//     'fin'    => $fin ? $fin->format('Y-m-d') : null,
-// ]);
+    // return $this->render('collaborateur/rapport-recapitulatif.html.twig', [
+    //     'taches' => $tacheTerminee,
+    //     'debut'  => $debut ? $debut->format('Y-m-d') : null,
+    //     'fin'    => $fin ? $fin->format('Y-m-d') : null,
+    // ]);
 
-}
+    }
 
 }

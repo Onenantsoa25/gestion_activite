@@ -37,3 +37,19 @@ SELECT
     a.id_utilisateur_auteur
 FROM activite a LEFT JOIN modification_activite ma ON
     ma.id_activite = a.id_activite WHERE a.id_activite = 1
+
+
+
+Oublie de saisie: date_echeance >= aujourd'hui
+surcharge: 
+
+
+
+SELECT u.id_utilisateur, SUM(t.estimation) AS total_heure 
+FROM v_tache_non_terminee t JOIN utilisateur u ON u.id_utilisateur = t.id_utilisateur 
+WHERE DATE(t.debut) = CURDATE() 
+AND t.id_tache NOT IN (SELECT id_tache from tache_terminee) 
+AND t.id_tache NOT IN (SELECT id_tache FROM tache_supprimee)
+GROUP BY u.id_utilisateur 
+HAVING total_heure >= 1;
+

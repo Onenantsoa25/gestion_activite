@@ -29,42 +29,78 @@ class UtilisateurRepository extends ServiceEntityRepository
     //         ->getResult();
     // }
 
-    public function findAllByRole(?Role $role): array
-    {
-        $entityManager = $this->getEntityManager();
+    // public function findAllByRole(?Role $role): array
+    // {
+    //     $entityManager = $this->getEntityManager();
 
-        $dql = "
-            SELECT u, COALESCE(SUM(t.estimation), 0) as charge
-            FROM App\Entity\Utilisateur u
-            JOIN u.role r
-            LEFT JOIN App\Entity\Tache t WITH t.utilisateur = u
+    //     $dql = "
+    //         SELECT u, COALESCE(SUM(t.estimation), 0) as charge
+    //         FROM App\Entity\Utilisateur u
+    //         JOIN u.role r
+    //         LEFT JOIN App\Entity\Tache t WITH t.utilisateur = u
+    //         WHERE r.id = :roleId
+    //         GROUP BY u
+    //     ";
+
+    //     $query = $entityManager->createQuery($dql);
+    //     $query->setParameter('roleId', $role->getId());
+
+    //     $result = $query->getResult();
+
+    //     // Injecter la charge dans chaque utilisateur (en une seule boucle inévitable ici)
+    //     foreach ($result as &$row) {
+    //         if (is_array($row)) {
+    //             /** @var Utilisateur $user */
+    //             $user = $row[0];
+    //             $charge = $row['charge'];
+    //             $user->setCharges($charge);
+    //             $row = $user; // on remplace le tableau par l'objet utilisateur modifié
+    //         }
+    //     }
+
+    //     return $result;
+    // }
+
+    public function findAllByRole(?Role $role): array {
+        $conn = $this->getEntityManager()->getConnection();
+
+        $sql = "SELECT u.id_utilisateur, u.id_role,
+                COALESCE(SUM(v.estimation), 0) as charge
+            FROM utilisateur u
+            JOIN role r ON u.id_role = r.id
+            LEFT JOIN v_tache_non_terminee_utilisateur v ON v.id_utilisateur = u.id_utilisateur
             WHERE r.id = :roleId
-            GROUP BY u
-        ";
+            AND u.id_utilisateur IS NOT NULL
+            GROUP BY u.id_utilisateur";
 
-        $query = $entityManager->createQuery($dql);
-        $query->setParameter('roleId', $role->getId());
+        $stmt = $conn->prepare($sql);
+        $resultSet = $stmt->executeQuery(['roleId' => $role->getId()]);
 
-        $result = $query->getResult();
+        $rows = $resultSet->fetchAllAssociative();
 
-        // Injecter la charge dans chaque utilisateur (en une seule boucle inévitable ici)
-        foreach ($result as &$row) {
-            if (is_array($row)) {
-                /** @var Utilisateur $user */
-                $user = $row[0];
-                $charge = $row['charge'];
-                $user->setCharges($charge);
-                $row = $user; // on remplace le tableau par l'objet utilisateur modifié
-            }
+        $users = [];
+        foreach ($rows as $row) {
+            // $user = $this->getEntityManager()->getRepository(Utilisateur::class)->find(['id_utilisateur' => $row['id_utilisateur']]);
+            $user = $this->getEntityManager()->getRepository(Utilisateur::class)->find($row['id_utilisateur']);
+            $user->setCharges((float) $row['charge']);
+            $users[] = $user;
         }
 
-        return $result;
+        return $users;
     }
 
 
-    public function findById(int $id): ?Utilisateur
+    // public function findById(?int $id): ?Utilisateur
+    // {
+    //     return $this->find(['id_utilisateur' => $id]);
+    // }
+
+    public function findById(?int $id): ?Utilisateur
     {
+        // echo "Utilisateur".$id;
         return $this->find($id);
+        // ou si tu veux être explicite :
+        // return $this->findOneBy(['idUtilisateur' => $id]);
     }
 
     public function charge_travail(Utilisateur $utilisateur): float {

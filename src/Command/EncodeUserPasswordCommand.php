@@ -5,15 +5,18 @@ namespace App\Command;
 
 use App\Entity\Utilisateur;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
+#[AsCommand(
+    name: 'app:encode-passwords',
+    description: 'Hash all plain-text user passwords stored in the database',
+)]
 class EncodeUserPasswordCommand extends Command
 {
-    protected static $defaultName = 'app:encode-passwords';
-
     private $em;
     private $passwordHasher;
 
@@ -35,6 +38,8 @@ class EncodeUserPasswordCommand extends Command
         }
 
         $this->em->flush();
+
+        $output->writeln('<info>All passwords have been encoded successfully!</info>');
 
         return Command::SUCCESS;
     }

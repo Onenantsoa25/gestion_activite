@@ -4,191 +4,168 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}Toutes les activités non terminées{% endblock %}</title>
-  <!-- Bootstrap CSS CDN -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
-  <!-- Bootstrap Icons CDN (IMPORTANT pour les icônes du sidebar) -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+
+  <!-- Bootstrap -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css"/>
+
   <style>
-      /* Styles pour le corps et le padding pour le sidebar */
-      body {
-          padding-left: 280px; /* Largeur du sidebar */
-          background-color: #F5F5F5; /* Couleur de fond gris très doux pour le contenu principal */
-      }
-      /* Pour la responsivité sur mobile, vous pourriez vouloir cacher le sidebar fixe et utiliser un offcanvas */
-      @media (max-width: 767.98px) { /* Moins de 768px (taille md de Bootstrap) */
-          body {
-              padding-left: 0; /* Pas de padding sur mobile si le sidebar est un offcanvas */
-          }
-          .sidebar-fixed-desktop { /* Cache le sidebar fixe sur mobile */
-              display: none !important;
-          }
-      }
+    body {
+      padding-left: 280px;
+      background-color: #F5F5F5;
+      transition: padding-left 0.3s ease;
+    }
 
-      /* Styles pour les cartes (si utilisées pour le tableau) */
-      .card {
-          border-radius: 12px; /* Bords plus arrondis */
-          border: 1px solid #e0e0e0; /* Bordure subtile */
-          box-shadow: 0 4px 15px rgba(0,0,0,0.08); /* Ombre plus douce et moderne */
-      }
+    .sidebar-fixed-desktop {
+      width: 280px;
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100vh;
+      background: linear-gradient(to bottom, #ffffffdc, #c8dbebff);
+      padding: 1rem;
+      z-index: 1050;
+      overflow-y: auto;
+    }
 
-      /* Styles pour les en-têtes de tableau */
-      .table-header-gray {
-          background-color: #e9ecef; /* Couleur grise claire de Bootstrap pour les en-têtes */
-          color: #343a40; /* Couleur de texte foncée pour un meilleur contraste */
-          vertical-align: middle; /* Alignement vertical au milieu */
-          font-weight: 600; /* Un peu plus gras pour les en-têtes */
-          padding: 1.2rem 1.5rem; /* Padding augmenté pour les en-têtes */
-          border-bottom: 2px solid #dee2e6; /* Bordure plus prononcée sous l'en-tête */
-          text-transform: uppercase; /* Texte en majuscules pour un look moderne */
-          font-size: 0.9rem; /* Taille de police légèrement plus petite */
-      }
+    @media (max-width: 767.98px) {
+      body { padding-left: 0; }
+      .sidebar-fixed-desktop { display: none; }
+    }
 
-      /* Styles pour le tableau avec bordures Bootstrap */
-      .table {
-          border-collapse: collapse; /* Fusionne les bordures des cellules */
-          margin-bottom: 0; /* Supprime la marge par défaut du tableau */
-          border-radius: 12px; /* Bords arrondis pour le tableau entier */
-          overflow: hidden; /* Cache les coins des bordures internes */
-          border: 1px solid #dee2e6; /* Bordure générale du tableau */
-      }
-      .table th,
-      .table td {
-          border: 1px solid #dee2e6; /* Bordures pour toutes les cellules */
-          padding: 0.8rem 1.2rem; /* Padding réduit pour une hauteur de ligne plus petite */
-          vertical-align: middle; /* Alignement vertical par défaut */
-      }
-      /* Supprime la bordure inférieure de la dernière ligne pour un rendu propre */
-      .table tbody tr:last-child {
-          border-bottom: none;
-      }
+    main.container-fluid {
+      margin-left: 280px;
+      width: calc(100% - 280px);
+      padding: 1rem;
+      transition: margin-left 0.3s ease, width 0.3s ease;
+    }
 
-      /* Centrer le contenu des cellules des boutons */
-      .table td.text-center-buttons {
-          text-align: center;
-          vertical-align: middle;
-          width: 1%; /* Rendre la colonne du bouton compacte */
-          white-space: nowrap; /* Empêche le texte du bouton de passer à la ligne */
-      }
+    @media (max-width: 767.98px) {
+      main.container-fluid { margin-left: 0; width: 100%; padding: 1rem 0.5rem; }
+    }
 
-      /* Nouvelle règle CSS pour la colonne d'activité */
-      .table tbody td:first-child {
-          word-break: break-word; /* Permet aux mots longs de se couper et de passer à la ligne */
-      }
+    .mobile-menu-bar {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1100;
+      background: white;
+      padding: 0.75rem 1rem;
+      box-shadow: 0 2px 6px rgb(0 0 0 / 0.1);
+      align-items: center;
+      justify-content: space-between;
+    }
+    @media (max-width: 767.98px) {
+      .mobile-menu-bar { display: flex; }
+    }
 
-      /* Style pour les boutons d'icône */
-      .btn-icon {
-          padding: 0.5rem 0.75rem; /* Ajuster le padding pour les icônes */
-          font-size: 1rem; /* Taille de l'icône */
-          line-height: 1; /* Assurer un bon alignement vertical de l'icône */
-      }
+    /* Style cartes et tableau */
+    .card {
+      border-radius: 12px;
+      border: 1px solid #e0e0e0;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    }
 
-      /* Styles pour la colonne Date d'échéance */
-      .col-date-echeance {
-          width: 150px; /* Largeur fixe pour la date d'échéance */
-          white-space: nowrap; /* Empêche la date de passer à la ligne */
-      }
+    .table-header-gray {
+      background-color: #e9ecef;
+      color: #343a40;
+      font-weight: 600;
+      text-transform: uppercase;
+      font-size: 0.9rem;
+    }
+
+    .table td, .table th {
+      vertical-align: middle;
+      padding: 0.8rem 1.2rem;
+    }
+
+    .table td.text-center-buttons {
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    .col-date-echeance {
+      width: 150px;
+      white-space: nowrap;
+    }
   </style>
   {% block stylesheets %}{% endblock %}
 </head>
 <body>
-  {# Inclusion directe du Sidebar #}
-  <div class="sidebar-fixed-desktop col-md-2">
-      {% include 'components/sidebar-manager.html.twig'  with {'active': 'activites'} %}
+
+  <!-- Sidebar fixe desktop -->
+  <div class="sidebar-fixed-desktop">
+    {% include 'components/sidebar-manager.html.twig' with {'active': 'activites'} %}
   </div>
 
-  <main class="container-fluid py-5 col-md-10">
-      <h1 class="mb-5 text-center">Toutes les activités non terminées</h1>
-        {# <div class="col-md-3" ></div> #}
-      <div class="row justify-content-center ">
-          {# Augmentation de la largeur de la colonne pour la carte du tableau #}
-          <div class="col-md-11 col-lg-10"> {# Prend plus de largeur sur les écrans moyens et grands #}
-              <div class="card h-100">
-                  <div class="card-body p-0">
-                      <h5 class="card-title mb-3 px-4 pt-4 text-center">Détails des activités</h5>
-                      <div class="table-responsive">
-                          <table class="table table-hover table-bordered mb-0">
-                              <thead>
-                                  <tr>
-                                      <th scope="col" class="table-header-gray">Activité</th>
-                                      <th scope="col" class="table-header-gray col-date-echeance">Date d'échéance</th>
-                                      <th scope="col" class="table-header-gray text-center-buttons">Action</th> {# Centrer l'en-tête de la colonne d'action #}
-                                  </tr>
-                              </thead>
-                              <tbody>
-                                  {# Exemple d'activités non terminées. En production, ces données viendraient de votre backend. #}
-                                  {% for activite in activites %}
-                                    <tr>
-                                        <td class="align-middle">{{activite.activite}}</td>
-                                        <td class="align-middle col-date-echeance">{{ activite.dateEcheance|date('d/m/Y') }}</td>
-                                        <td class="text-center-buttons">
-                                            <a href="/manager/activite/taches/{{activite.id}}">
-                                                <button type="button" class="btn btn-sm btn-primary view-tasks-btn btn-icon" data-activity-id="1" title="Voir les tâches">
-                                                    <i class="bi bi-eye"></i>
-                                                </button>
-                                            </a>
-    {% if activite.dateDebut is null %}
-        <!-- Bouton "Commencer" en vert -->
-        <a href="/manager/activite/commencer/{{activite.id}}">
-            <button type="button" class="btn btn-sm" style="background-color: #46b809ff; color: #fff; border: none; margin-left: 0.5rem;" title="Commencer l'activité">
-                Commencer
-            </button>
-        </a>
-    {% else %}
-        <!-- Badge "Déjà commencée" en gris clair -->
-        <span class="badge" style="background-color: #adb5bd; color: #fff; margin-left: 0.5rem;">
-            Déjà commencée
-        </span>
-    {% endif %}
-                                        </td>
-                                    </tr>                                    
-                                  {% endfor %}
-                                  {# <tr>
-                                      <td class="align-middle">Activité 1</td>
-                                      <td class="align-middle col-date-echeance">31-07-2025</td>
-                                      <td class="text-center-buttons">
-                                          <button type="button" class="btn btn-sm btn-primary view-tasks-btn btn-icon" data-activity-id="1" title="Voir les tâches">
-                                              <i class="bi bi-eye"></i>
-                                          </button>
-                                      </td>
-                                  </tr>
-                                  <tr>
-                                      <td class="align-middle">Activité 2</td>
-                                      <td class="align-middle col-date-echeance">05-07-2025</td>
-                                      <td class="text-center-buttons">
-                                          <button type="button" class="btn btn-sm btn-primary view-tasks-btn btn-icon" data-activity-id="2" title="Voir les tâches">
-                                              <i class="bi bi-eye"></i>
-                                          </button>
-                                      </td>
-                                  </tr> #}
-                                  {# Ajoutez d'autres lignes de données ici si nécessaire #}
-                              </tbody>
-                          </table>
-                      </div>
-                  </div>
-              </div>
-          </div>
-      </div>
+  <!-- Barre mobile -->
+  <div class="mobile-menu-bar d-md-none">
+    <h5 class="mb-0">Menu</h5>
+    <button class="btn btn-outline-primary" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileSidebar">
+      <i class="bi bi-list fs-4"></i>
+    </button>
+  </div>
 
-      {% block page_content %}{% endblock %}
+  <!-- Sidebar mobile -->
+  <div class="offcanvas offcanvas-start" tabindex="-1" id="mobileSidebar">
+    <div class="offcanvas-header">
+      <h5 class="offcanvas-title">Menu</h5>
+      <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas"></button>
+    </div>
+    <div class="offcanvas-body">
+      {% include 'components/sidebar-manager.html.twig' with {'active': 'activites'} %}
+    </div>
+  </div>
+
+  <!-- Contenu principal -->
+  <main class="container-fluid py-5">
+    <h1 class="mb-5 text-center">Toutes les activités non terminées</h1>
+
+    <div class="row justify-content-center">
+      <div class="col-12 col-lg-10">
+        <div class="card h-100">
+          <div class="card-body p-0">
+            <h5 class="card-title mb-3 px-4 pt-4 text-center">Détails des activités</h5>
+            <div class="table-responsive">
+              <table class="table table-hover table-bordered mb-0">
+                <thead>
+                  <tr>
+                    <th class="table-header-gray">Activité</th>
+                    <th class="table-header-gray col-date-echeance">Date d'échéance</th>
+                    <th class="table-header-gray text-center-buttons">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for activite in activites %}
+                    <tr>
+                      <td>{{ activite.activite }}</td>
+                      <td class="col-date-echeance">{{ activite.dateEcheance|date('d/m/Y') }}</td>
+                      <td class="text-center-buttons">
+                        <a href="/manager/activite/taches/{{activite.id}}" class="btn btn-sm btn-primary btn-icon" title="Voir les tâches">
+                          <i class="bi bi-eye"></i>
+                        </a>
+                        {% if activite.dateDebut is null %}
+                          <a href="/manager/activite/commencer/{{activite.id}}" class="btn btn-sm ms-2" style="background:#46b809; color:white;">Commencer</a>
+                        {% else %}
+                          <span class="badge bg-secondary ms-2">Déjà commencée</span>
+                        {% endif %}
+                      </td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {% block page_content %}{% endblock %}
   </main>
 
-  <!-- Bootstrap JS CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   {% block javascripts %}{% endblock %}
-
-  <script>
-      document.addEventListener('DOMContentLoaded', function() {
-          document.querySelectorAll('.view-tasks-btn').forEach(button => {
-              button.addEventListener('click', function() {
-                  const activityId = this.dataset.activityId;
-                  console.log(`Bouton 'Voir les tâches' cliqué pour l'activité ID: ${activityId}`);
-                  // Ici, vous intégreriez votre logique pour rediriger vers une page
-                  // affichant les tâches spécifiques à cette activité.
-                  // Exemple: window.location.href = `/activities/${activityId}/tasks`;
-              });
-          });
-      });
-  </script>
 </body>
 </html>
-</merged_code>

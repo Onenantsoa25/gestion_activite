@@ -57,7 +57,7 @@ CREATE TABLE anomalie(
    est_resolue BOOLEAN,
    date_anomalie DATETIME NOT NULL,
    id_utilisateur INT NOT NULL,
-   matricule INT NOT NULL,
+   -- matricule INT NOT NULL,
    id_type_anomalie INT NOT NULL,
    PRIMARY KEY(id_anomalie),
    FOREIGN KEY(id_utilisateur) REFERENCES utilisateur(id_utilisateur),
@@ -165,3 +165,8 @@ CREATE TABLE tache_supprimee (
 
 ALTER TABLE tache_supprimee
 ADD CONSTRAINT unique_id_tache UNIQUE (id_tache);
+
+
+ALTER TABLE anomalie ADD COLUMN message VARCHAR(255);
+
+ALTER TABLE anomalie ADD COLUMN id_tache int DEFAULT NULL REFERENCES tache(id_tache);

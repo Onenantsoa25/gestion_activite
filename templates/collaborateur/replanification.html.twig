@@ -113,7 +113,7 @@
                             {# Champ pour sélectionner la nouvelle date #}
                             <div class="mb-4">
                                 <label for="newDate" class="form-label">Sélectionnez la nouvelle date</label>
-                                <input type="datetime-local" class="form-control" id="newDate" name="dateDebut" required >
+                                <input type="datetime-local" value="{{tache.debut|date('Y-m-d\\TH:i')}}" class="form-control" id="newDate" name="dateDebut" required >
                             </div>
 
                             <input type="hidden" name="id_tache" value="{{ tache.id }}">

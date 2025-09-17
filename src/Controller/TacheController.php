@@ -258,60 +258,63 @@ class TacheController extends AbstractController
 //     ]);
 // }
 
-#[Route("/collaborateur/tache/terminer", name: "terminer_tache_collab", methods: ["POST"])]
-public function terminer_tache(Request $request): Response
-{
-    $this->denyAccessUnlessGranted('ROLE_COLLABORATEUR');
+    #[Route("/collaborateur/tache/terminer", name: "terminer_tache_collab", methods: ["POST"])]
+    public function terminer_tache(Request $request): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_COLLABORATEUR');
 
-    $id_tache = $request->get('id_tache');
-    $date = new \DateTime(); // Date actuelle
-    $temps_passe = floatval($request->get('temps_passe'));
-    $commentaire = $request->get('commentaire');
+        $id_tache = $request->get('id_tache');
+        $date = new \DateTime(); // Date actuelle
+        $temps_passe = floatval($request->get('temps_passe'));
+        $commentaire = $request->get('commentaire');
 
-    // Vérification des champs obligatoires
-    if (!$id_tache || !$date || !$temps_passe) {
-        $this->addFlash('error', 'Données manquantes pour terminer la tâche.');
-        return $this->redirectToRoute('liste_taches_collab');
-    }
-
-    // Gestion du fichier justificatif
-    $justificatifPath = null;
-    /** @var UploadedFile $file */
-    $file = $request->files->get('justificatif');
-    if ($file) {
-        // Vérification du type de fichier (PDF ou image)
-        $allowedMimeTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/gif'];
-        if (!in_array($file->getMimeType(), $allowedMimeTypes)) {
-            $this->addFlash('error', 'Le fichier justificatif doit être un PDF ou une image (JPG, PNG, GIF).');
-            return $this->redirectToRoute('liste_taches_collab');
+        // Vérification des champs obligatoires
+        if (!$id_tache || !$date || !$temps_passe) {
+            $this->addFlash('error', 'Données manquantes pour terminer la tâche.');
+            // return $this->redirectToRoute('liste_taches_collab');
+            return $this->render('collaborateur/dashboard.html.twig', [
+                'erreur' => 'Données manquantes pour terminer la tâche.'
+            ]);
         }
 
-        // Définir le dossier de stockage (ex: public/uploads/justificatifs)
-        $uploadDir = $this->getParameter('kernel.project_dir') . '/public/uploads/justificatifs';
+        // Gestion du fichier justificatif
+        $justificatifPath = null;
+        /** @var UploadedFile $file */
+        $file = $request->files->get('justificatif');
+        if ($file) {
+            // Vérification du type de fichier (PDF ou image)
+            $allowedMimeTypes = ['application/pdf', 'application/x-pdf', 'image/jpeg', 'image/png', 'image/gif'];
+            if (!in_array($file->getMimeType(), $allowedMimeTypes)) {
+                $this->addFlash('error', 'Le fichier justificatif doit être un PDF ou une image (JPG, PNG, GIF).');
+                return $this->redirectToRoute('liste_taches_collab');
+            }
 
-        if (!is_dir($uploadDir)) {
-            mkdir($uploadDir, 0777, true);
+            // Définir le dossier de stockage (ex: public/uploads/justificatifs)
+            $uploadDir = $this->getParameter('kernel.project_dir') . '/public/uploads/justificatifs';
+
+            if (!is_dir($uploadDir)) {
+                mkdir($uploadDir, 0777, true);
+            }
+
+            // Générer un nom de fichier unique
+            $newFilename = uniqid('justif_') . '.' . $file->guessExtension();
+
+            // Déplacer le fichier
+            $file->move($uploadDir, $newFilename);
+
+            // Chemin à stocker en base (relatif au dossier public)
+            $justificatifPath = 'uploads/justificatifs/' . $newFilename;
         }
 
-        // Générer un nom de fichier unique
-        $newFilename = uniqid('justif_') . '.' . $file->guessExtension();
+        // Appel du service pour terminer la tâche
+        $this->tacheService->terminerTache($id_tache, $date, $temps_passe, $commentaire, $justificatifPath);
 
-        // Déplacer le fichier
-        $file->move($uploadDir, $newFilename);
+        $tache = $this->tacheService->findById($id_tache);
 
-        // Chemin à stocker en base (relatif au dossier public)
-        $justificatifPath = 'uploads/justificatifs/' . $newFilename;
+        return $this->redirectToRoute('liste_taches_activite_collab', [
+            'id_activite' => $tache->getActivite()->getId()
+        ]);
     }
-
-    // Appel du service pour terminer la tâche
-    $this->tacheService->terminerTache($id_tache, $date, $temps_passe, $commentaire, $justificatifPath);
-
-    $tache = $this->tacheService->findById($id_tache);
-
-    return $this->redirectToRoute('liste_taches_activite_collab', [
-        'id_activite' => $tache->getActivite()->getId()
-    ]);
-}
 
     #[Route("/tache/planifier/{id_tache}", name: "planifier_tache", methods: ["GET"])]
     public function planifier_tache(int $id_tache): Response
@@ -344,6 +347,12 @@ public function terminer_tache(Request $request): Response
         }
 
         $tache = $this->tacheService->findById($id_tache);
+        if($tache->getDateEcheance() < $datePrevue) {
+            return $this->render('collaborateur/planifier-tache.html.twig', [
+                'tache' => $tache,
+                'erreur' => "La date de planification doit etre inferieur a la date d'echeance. \n Date d'échéance : ".$tache->getDateEcheance()->format('d/m/Y'),
+            ]);
+        }
         if (!$tache) {
             $this->addFlash('error', 'Tâche introuvable.');
             return $this->redirectToRoute('liste_taches_collab');
@@ -597,7 +606,7 @@ public function terminer_tache(Request $request): Response
         return $this->redirectToRoute('liste_activite_manager');
     }
 
-        #[Route('/manager/modifier/tache/collab', name: 'modifier_tache_collab', methods: ['POST'])]
+    #[Route('/manager/modifier/tache/collab', name: 'modifier_tache_collab', methods: ['POST'])]
     public function modifier_tache_collab(Request $request): Response
     {
         $this->denyAccessUnlessGranted('ROLE_MANAGER');
@@ -614,10 +623,15 @@ public function terminer_tache(Request $request): Response
         $estimation = (float) $request->request->get('estimation');
         $dateStr    = $request->request->get('dateEcheance');
 
-        try {
-            $date = new \DateTime($dateStr);
-        } catch (\Exception $e) {
-            throw new \InvalidArgumentException("Date d'échéance invalide : $dateStr");
+        // echo $dateStr;
+        // die();
+
+        if($dateStr != null) {
+            try {
+                $date = new \DateTime($dateStr);
+            } catch (\Exception $e) {
+                throw new \InvalidArgumentException("Date d'échéance invalide : $dateStr");
+            }
         }
 
         // Vérifier si au moins un champ a changé

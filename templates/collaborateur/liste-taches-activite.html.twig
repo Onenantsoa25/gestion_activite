@@ -98,7 +98,10 @@
                                                             {% else %}
                                                             <td class="align-middle">encours</td>
                                                         {% endif %}
-                                                        <td>
+                                                        <td class="align-middle text-nowrap" >
+                                                            <a href="/collaborateur/replanifier/tache/{{tache.id}}"
+                                                                <i class="bi-pencil-square fs-3"></i>
+                                                            </a>
                                                             <a href="{{ path('saisie_terminer_tache_collab', { id_tache: tache.id }) }}" class="btn btn-sm btn-danger end-task-btn">
                                                                 Terminer
                                                             </a>

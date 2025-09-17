@@ -56,7 +56,11 @@ class ActiviteRepository extends ServiceEntityRepository
 
         $activite->setId($row['id_activite']);
         $activite->setActivite($row['activite']);
-        $activite->setDateDebut($row['date_debut']);
+        try{
+            $activite->setDateDebut(new \DateTime($row['date_debut']));
+        } catch (\Exception $e) {
+            // continue
+        }
         $activite->setDateEcheance(new \DateTime($row['date_echeance']));
         $activite->setEstValide($row['est_valide']);
         $activite->setTypeActivite($typeRepo->find((int) $row['id_type_activite']));

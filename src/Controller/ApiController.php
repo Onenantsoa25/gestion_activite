@@ -12,6 +12,7 @@ use App\Entity\TacheTerminee;
 use App\Entity\Activite;
 use App\Entity\Utilisateur;
 use App\Repository\TacheTermineeRepository;
+use App\Service\AnomalieService;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
@@ -31,13 +32,15 @@ class ApiController extends AbstractController
     private ActiviteService $activiteService;
     private UtilisateurService $utilisateurService;
     private TacheTermineeRepository $tacheTermineeRepository;
+    private AnomalieService $anomalieService;
 
-    public function __construct(TacheService $tacheService, ActiviteService $activiteService, UtilisateurService $utilisateurService, TacheTermineeRepository $tacheTermineeRepository)
+    public function __construct(TacheService $tacheService, ActiviteService $activiteService, UtilisateurService $utilisateurService, TacheTermineeRepository $tacheTermineeRepository, AnomalieService $anomalieService)
     {
         $this->tacheService = $tacheService;
         $this->activiteService = $activiteService;
         $this->utilisateurService = $utilisateurService;
         $this->tacheTermineeRepository = $tacheTermineeRepository;
+        $this->anomalieService = $anomalieService;
     }
 
     #[Route("/api/collaborateur/dashboard", name: "temps_passe_collab", methods: ["GET"])]
@@ -129,163 +132,192 @@ class ApiController extends AbstractController
 //     ]);
 // }
 
-#[Route('/{id}/justificatif', name: 'api_tache_justificatif', methods: ['GET'])]
-public function getJustificatif(int $id): Response
-{
-    $tacheTerminee = $this->tacheTermineeRepository->find($id);
+    #[Route('/{id}/justificatif', name: 'api_tache_justificatif', methods: ['GET'])]
+    public function getJustificatif(int $id): Response
+    {
+        $tacheTerminee = $this->tacheTermineeRepository->find($id);
 
-    if (!$tacheTerminee || !$tacheTerminee->getJustificatif()) {
-        throw $this->createNotFoundException('Justificatif non trouvé.');
+        if (!$tacheTerminee || !$tacheTerminee->getJustificatif()) {
+            throw $this->createNotFoundException('Justificatif non trouvé.');
+        }
+
+        // Chemin complet vers le fichier
+        $filePath = $this->getParameter('kernel.project_dir') . '/public/' . $tacheTerminee->getJustificatif();
+
+        if (!file_exists($filePath)) {
+            $this->addFlash('error', 'Fichier introuvable sur le serveur.');
+            return $this->redirectToRoute('liste_taches_collab');
+        }
+
+        // 🔎 Détecter le vrai type MIME à partir du contenu
+        $finfo = new \finfo(FILEINFO_MIME_TYPE); 
+        $mimeType = $finfo->file($filePath) ?: 'application/octet-stream';
+
+        // Récupérer le nom réel du fichier
+        $originalFileName = basename($filePath);
+
+        $response = new BinaryFileResponse($filePath);
+        $response->headers->set('Content-Type', $mimeType);
+
+        // ✅ Forcer le téléchargement avec le nom original du fichier
+        $response->setContentDisposition(
+            ResponseHeaderBag::DISPOSITION_ATTACHMENT,
+            $originalFileName
+        );
+
+        return $response;
     }
 
-    // Chemin complet vers le fichier
-    $filePath = $this->getParameter('kernel.project_dir') . '/public/' . $tacheTerminee->getJustificatif();
+    #[Route('/rapport/export-pdf', name: 'rapport_export_pdf')]
+    public function exportPdf(Request $request): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_COLLABORATEUR');
 
-    if (!file_exists($filePath)) {
-        $this->addFlash('error', 'Fichier introuvable sur le serveur.');
-        return $this->redirectToRoute('liste_taches_collab');
+        $debut = $request->get('debut');
+        $fin = $request->get('fin');
+
+        // ⚡ Transformer "null" en null
+        $debut = ($debut === 'null') ? null : new \DateTimeImmutable($debut);
+        $fin   = ($fin === 'null') ? null : new \DateTimeImmutable($fin);
+
+        $tacheTerminee = $this->tacheService->rapportDates($this->getUser(), $debut, $fin);
+
+        // ⚡ Déterminer la période pour l'affichage
+        if ($debut === null && $fin === null) {
+            $periode = "Semaine de " . (new \DateTimeImmutable('today'))->format('d/m/Y');
+        } elseif ($debut !== null && $fin !== null) {
+            $periode = $debut->format('d/m/Y') . " à " . $fin->format('d/m/Y');
+        } else {
+            $dateNonNull = $debut ?? $fin;
+            $periode = "Semaine de " . $dateNonNull->format('d/m/Y');
+        }
+
+        // ⚡ Options de Dompdf
+        $options = new Options();
+        $options->set('defaultFont', 'Arial');
+        $options->set('isRemoteEnabled', true);
+        $dompdf = new Dompdf($options);
+
+        // ⚡ Rendu du HTML avec Twig
+        $html = $this->renderView('rapport/pdf.html.twig', [
+            'taches' => $tacheTerminee,
+            'periode' => $periode
+        ]);
+
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+
+        return new Response(
+            $dompdf->stream('rapport.pdf', ['Attachment' => true]),
+            Response::HTTP_OK,
+            ['Content-Type' => 'application/pdf']
+        );
     }
 
-    // 🔎 Détecter le vrai type MIME à partir du contenu
-    $finfo = new \finfo(FILEINFO_MIME_TYPE); 
-    $mimeType = $finfo->file($filePath) ?: 'application/octet-stream';
+    #[Route('/rapport/export-excel', name: 'rapport_export_excel')]
+    public function exportExcel(Request $request): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_COLLABORATEUR');
 
-    // Récupérer le nom réel du fichier
-    $originalFileName = basename($filePath);
+        $debut = $request->get('debut');
+        $fin   = $request->get('fin');
 
-    $response = new BinaryFileResponse($filePath);
-    $response->headers->set('Content-Type', $mimeType);
+        $debut = ($debut === 'null') ? null : new \DateTimeImmutable($debut);
+        $fin   = ($fin === 'null') ? null : new \DateTimeImmutable($fin);
 
-    // ✅ Forcer le téléchargement avec le nom original du fichier
-    $response->setContentDisposition(
-        ResponseHeaderBag::DISPOSITION_ATTACHMENT,
-        $originalFileName
-    );
+        $tacheTerminee = $this->tacheService->rapportDates($this->getUser(), $debut, $fin);
 
-    return $response;
-}
+        // Déterminer la période
+        if ($debut === null && $fin === null) {
+            $periode = "Semaine de " . (new \DateTimeImmutable('today'))->format('d/m/Y');
+        } elseif ($debut !== null && $fin !== null) {
+            $periode = $debut->format('d/m/Y') . " à " . $fin->format('d/m/Y');
+        } else {
+            $dateNonNull = $debut ?? $fin;
+            $periode = "Semaine de " . $dateNonNull->format('d/m/Y');
+        }
 
-#[Route('/rapport/export-pdf', name: 'rapport_export_pdf')]
-public function exportPdf(Request $request): Response
-{
-    $this->denyAccessUnlessGranted('ROLE_COLLABORATEUR');
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle('Rapport');
 
-    $debut = $request->get('debut');
-    $fin = $request->get('fin');
+        // Titre
+        $sheet->mergeCells('A1:D1');
+        $sheet->setCellValue('A1', 'Rapport et récapitulatif d\'activité');
+        $sheet->mergeCells('A2:D2');
+        $sheet->setCellValue('A2', $periode);
 
-    // ⚡ Transformer "null" en null
-    $debut = ($debut === 'null') ? null : new \DateTimeImmutable($debut);
-    $fin   = ($fin === 'null') ? null : new \DateTimeImmutable($fin);
+        // En-tête du tableau
+        $sheet->setCellValue('A4', 'Date')
+            ->setCellValue('B4', 'Tâche')
+            ->setCellValue('C4', 'Activite du tâche')
+            ->setCellValue('D4', 'Durée')
+            ->setCellValue('E4', 'Commentaire');
 
-    $tacheTerminee = $this->tacheService->rapportDates($this->getUser(), $debut, $fin);
+        $sheet->getStyle('A4:D4')->getFont()->setBold(true);
+        $sheet->getStyle('A1:D2')->getFont()->setBold(true);
 
-    // ⚡ Déterminer la période pour l'affichage
-    if ($debut === null && $fin === null) {
-        $periode = "Semaine de " . (new \DateTimeImmutable('today'))->format('d/m/Y');
-    } elseif ($debut !== null && $fin !== null) {
-        $periode = $debut->format('d/m/Y') . " à " . $fin->format('d/m/Y');
-    } else {
-        $dateNonNull = $debut ?? $fin;
-        $periode = "Semaine de " . $dateNonNull->format('d/m/Y');
-    }
-
-    // ⚡ Options de Dompdf
-    $options = new Options();
-    $options->set('defaultFont', 'Arial');
-    $options->set('isRemoteEnabled', true);
-    $dompdf = new Dompdf($options);
-
-    // ⚡ Rendu du HTML avec Twig
-    $html = $this->renderView('rapport/pdf.html.twig', [
-        'taches' => $tacheTerminee,
-        'periode' => $periode
-    ]);
-
-    $dompdf->loadHtml($html);
-    $dompdf->setPaper('A4', 'portrait');
-    $dompdf->render();
-
-    return new Response(
-        $dompdf->stream('rapport.pdf', ['Attachment' => true]),
-        Response::HTTP_OK,
-        ['Content-Type' => 'application/pdf']
-    );
-}
-
-#[Route('/rapport/export-excel', name: 'rapport_export_excel')]
-public function exportExcel(Request $request): Response
-{
-    $this->denyAccessUnlessGranted('ROLE_COLLABORATEUR');
-
-    $debut = $request->get('debut');
-    $fin   = $request->get('fin');
-
-    $debut = ($debut === 'null') ? null : new \DateTimeImmutable($debut);
-    $fin   = ($fin === 'null') ? null : new \DateTimeImmutable($fin);
-
-    $tacheTerminee = $this->tacheService->rapportDates($this->getUser(), $debut, $fin);
-
-    // Déterminer la période
-    if ($debut === null && $fin === null) {
-        $periode = "Semaine de " . (new \DateTimeImmutable('today'))->format('d/m/Y');
-    } elseif ($debut !== null && $fin !== null) {
-        $periode = $debut->format('d/m/Y') . " à " . $fin->format('d/m/Y');
-    } else {
-        $dateNonNull = $debut ?? $fin;
-        $periode = "Semaine de " . $dateNonNull->format('d/m/Y');
-    }
-
-    $spreadsheet = new Spreadsheet();
-    $sheet = $spreadsheet->getActiveSheet();
-    $sheet->setTitle('Rapport');
-
-    // Titre
-    $sheet->mergeCells('A1:D1');
-    $sheet->setCellValue('A1', 'Rapport et récapitulatif d\'activité');
-    $sheet->mergeCells('A2:D2');
-    $sheet->setCellValue('A2', $periode);
-
-    // En-tête du tableau
-    $sheet->setCellValue('A4', 'Date')
-          ->setCellValue('B4', 'Tâche')
-          ->setCellValue('C4', 'Activite du tâche')
-          ->setCellValue('D4', 'Durée')
-          ->setCellValue('E4', 'Commentaire');
-
-    $sheet->getStyle('A4:D4')->getFont()->setBold(true);
-    $sheet->getStyle('A1:D2')->getFont()->setBold(true);
-
-    $row = 5;
-    foreach ($tacheTerminee['details'] as $groupe) {
-        foreach ($groupe['tache_terminee'] as $index => $tache) {
-            $sheet->setCellValue('A'.$row, $index === 0 ? $groupe['date'] : '');
-            $sheet->setCellValue('B'.$row, $tache->getTache()?->getTache() ?? '');
-            $sheet->setCellValue('C'.$row, $tache->getTache()?->getActivite()?->getActivite() ?? '');
-            $sheet->setCellValue('D'.$row, $tache->getTempsPasse());
-            $sheet->setCellValue('E'.$row, $tache->getCommentaire());
+        $row = 5;
+        foreach ($tacheTerminee['details'] as $groupe) {
+            foreach ($groupe['tache_terminee'] as $index => $tache) {
+                $sheet->setCellValue('A'.$row, $index === 0 ? $groupe['date'] : '');
+                $sheet->setCellValue('B'.$row, $tache->getTache()?->getTache() ?? '');
+                $sheet->setCellValue('C'.$row, $tache->getTache()?->getActivite()?->getActivite() ?? '');
+                $sheet->setCellValue('D'.$row, $tache->getTempsPasse());
+                $sheet->setCellValue('E'.$row, $tache->getCommentaire());
+                $row++;
+            }
+            // Total du jour
+            $sheet->setCellValue('A'.$row, 'Total');
+            $sheet->setCellValue('C'.$row, $groupe['total_duree']);
             $row++;
         }
-        // Total du jour
-        $sheet->setCellValue('A'.$row, 'Total');
-        $sheet->setCellValue('C'.$row, $groupe['total_duree']);
-        $row++;
+
+        // Total semaine
+        $sheet->setCellValue('A'.$row, 'Total semaine');
+        $sheet->setCellValue('C'.$row, $tacheTerminee['total']);
+
+        // Ajuster largeur automatique
+        foreach (range('A', 'D') as $col) {
+            $sheet->getColumnDimension($col)->setAutoSize(true);
+        }
+
+        $writer = new Xlsx($spreadsheet);
+        $fileName = 'rapport.xlsx';
+        $temp_file = tempnam(sys_get_temp_dir(), $fileName);
+        $writer->save($temp_file);
+
+        return $this->file($temp_file, $fileName, ResponseHeaderBag::DISPOSITION_ATTACHMENT);
     }
 
-    // Total semaine
-    $sheet->setCellValue('A'.$row, 'Total semaine');
-    $sheet->setCellValue('C'.$row, $tacheTerminee['total']);
+    #[Route('/api/anomalies/update', name: 'api_update_anomalies', methods: ['POST'])]
+    public function updateAnomalies(): JsonResponse
+    {
+        $this->denyAccessUnlessGranted('ROLE_MANAGER'); // ou ROLE_ADMIN si nécessaire
 
-    // Ajuster largeur automatique
-    foreach (range('A', 'D') as $col) {
-        $sheet->getColumnDimension($col)->setAutoSize(true);
+        try {
+            $this->anomalieService->updateAnomalies();
+            return $this->json([
+                'status' => 'success',
+                'message' => 'Anomalies mises à jour avec succès.'
+            ]);
+        } catch (\Exception $e) {
+            return $this->json([
+                'status' => 'error',
+                'message' => 'Erreur lors de la mise à jour des anomalies : ' . $e->getMessage()
+            ], 500);
+        }
     }
 
-    $writer = new Xlsx($spreadsheet);
-    $fileName = 'rapport.xlsx';
-    $temp_file = tempnam(sys_get_temp_dir(), $fileName);
-    $writer->save($temp_file);
+    #[Route('/api/anomalies/count', name: 'api_update_anomalies', methods: ['GET'])]
+    public function countAnomalies(): JsonResponse
+    {
+        $this->denyAccessUnlessGranted('ROLE_MANAGER');
+        $this->anomalieService->analyse();
+        $count = $this->anomalieService->countNonResolues();
 
-    return $this->file($temp_file, $fileName, ResponseHeaderBag::DISPOSITION_ATTACHMENT);
-}
+        return $this->json(['count' => $count]);
+    }
 
 }

@@ -3,225 +3,204 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Liste Anomalies{% endblock %}</title>
-    <!-- Bootstrap CSS CDN -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
-    <!-- Bootstrap Icons CDN (IMPORTANT pour les icônes du sidebar) -->
+    <title>Liste Anomalies</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
     <style>
-        /* Styles pour le corps et le padding pour le sidebar */
         body {
-            padding-left: 280px; /* Largeur du sidebar */
-            background-color: #F5F5F5; /* Couleur de fond gris très doux pour le contenu principal */
-        }
-        /* Pour la responsivité sur mobile, vous pourriez vouloir cacher le sidebar fixe et utiliser un offcanvas */
-        @media (max-width: 767.98px) { /* Moins de 768px (taille md de Bootstrap) */
-            body {
-                padding-left: 0; /* Pas de padding sur mobile si le sidebar est un offcanvas */
-            }
-            .sidebar-fixed-desktop { /* Cache le sidebar fixe sur mobile */
-                /* display: none !important; */
-            }
+            padding-left: 280px;
+            background-color: #F5F5F5;
+            transition: padding-left 0.3s ease;
         }
 
-        /* Styles pour les cartes (si utilisées pour le tableau) */
-        .card {
-            border-radius: 12px; /* Bords plus arrondis */
-            border: 1px solid #e0e0e0; /* Bordure subtile */
-            box-shadow: 0 4px 15px rgba(0,0,0,0.08); /* Ombre plus douce et moderne */
+        /* --- Sidebar --- */
+        .sidebar-fixed-desktop {
+            width: 280px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            background: linear-gradient(to bottom, #ffffffdc, #c8dbebff);
+            padding: 1rem;
+            z-index: 1050;
+            overflow-y: auto;
         }
 
-        /* Styles pour les en-têtes de tableau grisés */
-        .table-header-gray {
-            background-color: #e9ecef; /* Couleur grise claire de Bootstrap pour les en-têtes */
-            vertical-align: middle; /* Alignement vertical au milieu */
-            font-weight: 600; /* Un peu plus gras pour les en-têtes */
-            padding: 1rem 1.25rem; /* Padding augmenté pour les en-têtes */
+        @media (max-width: 767.98px) {
+            body { padding-left: 0; }
+            .sidebar-fixed-desktop { display: none; }
         }
 
-        /* Styles pour le tableau avec bordures minimalistes et alignements */
-        .table {
-            border-collapse: collapse; /* Fusionne les bordures des cellules */
-            margin-bottom: 0; /* Supprime la marge par défaut du tableau */
-            border-radius: 12px; /* Applique le border-radius au tableau entier */
-            overflow: hidden; /* Cache les coins des bordures internes */
-            border: 1px solid #dee2e6; /* Bordure générale du tableau */
-        }
-        .table th,
-        .table td {
-            border: 1px solid #dee2e6; /* Bordure pour toutes les cellules */
-            padding: 0.8rem 1.2rem; /* Padding ajusté pour une hauteur plus petite */
-            vertical-align: middle; /* Alignement vertical par défaut */
-        }
-        /* Styles pour les coins arrondis du tableau */
-        .table thead th:first-child {
-            border-top-left-radius: 12px;
-        }
-        .table thead th:last-child {
-            border-top-right-radius: 12px;
-        }
-        .table tbody tr:last-child td:first-child {
-            border-bottom-left-radius: 12px;
-        }
-        .table tbody tr:last-child td:last-child {
-            border-bottom-right-radius: 12px;
+        main.container-fluid {
+            margin-left: 280px;
+            width: calc(100% - 280px);
+            padding: 1rem;
+            transition: margin-left 0.3s ease, width 0.3s ease;
         }
 
-        /* Centrer le contenu des cellules des boutons */
-        .table td.text-center-buttons {
-            text-align: center;
-            vertical-align: middle;
-            width: 1%; /* Rendre la colonne du bouton compacte */
-            white-space: nowrap; /* Empêche le texte du bouton de passer à la ligne */
+        @media (max-width: 767.98px) {
+            main.container-fluid { margin-left: 0; width: 100%; padding: 1rem 0.5rem; }
         }
 
-        /* Style pour le bouton Résoudre */
+        /* --- Mobile menu bar --- */
+        .mobile-menu-bar {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1100;
+            background: white;
+            padding: 0.75rem 1rem;
+            box-shadow: 0 2px 6px rgb(0 0 0 / 0.1);
+            align-items: center;
+            justify-content: space-between;
+        }
+        @media (max-width: 767.98px) {
+            .mobile-menu-bar { display: flex; }
+        }
+
+        /* --- Carte Anomalie --- */
+        .anomaly-card {
+            border-radius: 12px;
+            border: 1px solid #e0e0e0;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            padding: 1.2rem;
+            margin-bottom: 1rem;
+            background: #fff;
+        }
+
+        .anomaly-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+
+        .anomaly-date {
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+
+        /* --- Bouton Résoudre --- */
         .btn-resolve {
-            background-color: #0d6efd; /* Bleu primaire de Bootstrap */
-            border-color: #0d6efd;
+            background-color: #0d6efd;
+            border: none;
             color: white;
             font-weight: 500;
-            padding: 0.5rem 1rem;
+            padding: 0.4rem 0.8rem;
             border-radius: 6px;
             transition: background-color 0.2s ease, transform 0.1s ease;
         }
         .btn-resolve:hover {
-            background-color: #0b5ed7; /* Bleu plus foncé au survol */
-            border-color: #0b5ed7;
+            background-color: #0b5ed7;
             transform: translateY(-1px);
         }
-        .btn-resolve:active {
-            transform: translateY(0);
+        .btn-resolve:disabled {
+            background-color: #198754;
+            cursor: not-allowed;
         }
 
-        /* Style pour les boutons d'icône */
-        .btn-icon {
-            padding: 0.5rem 0.75rem; /* Ajuster le padding pour les icônes */
-            font-size: 1rem; /* Taille de l'icône */
-            line-height: 1; /* Assurer un bon alignement vertical de l'icône */
+        /* --- Styles pour messages longs --- */
+        .anomaly-message {
+            font-size: 1rem;
+            color: #333;
+            word-wrap: break-word;
+            max-height: 120px;
+            overflow: hidden;
+            position: relative;
+            margin: 0;
+        }
+        .anomaly-message.expanded {
+            max-height: none;
+        }
+
+        .show-more {
+            color: #0d6efd;
+            cursor: pointer;
+            font-size: 0.9rem;
+            display: inline-block;
+            margin-top: 0.3rem;
         }
     </style>
-    {% block stylesheets %}{% endblock %}
 </head>
 <body>
-    {# Inclusion directe du Sidebar #}
+    <!-- Sidebar Desktop -->
     <div class="sidebar-fixed-desktop">
-        {% include 'components/sidebar-manager.html.twig' %}
+        {% include 'components/sidebar-manager.html.twig' with {'active': 'anomalie'} %}
     </div>
 
+    <!-- Barre mobile -->
+    <div class="mobile-menu-bar d-md-none">
+        <h5 class="mb-0">Menu</h5>
+        <button class="btn btn-outline-primary" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileSidebar">
+            <i class="bi bi-list fs-4"></i>
+        </button>
+    </div>
+
+    <!-- Sidebar Offcanvas Mobile -->
+    <div class="offcanvas offcanvas-start" tabindex="-1" id="mobileSidebar">
+        <div class="offcanvas-header">
+            <h5 class="offcanvas-title">Menu</h5>
+            <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas"></button>
+        </div>
+        <div class="offcanvas-body">
+            {% include 'components/sidebar-manager.html.twig' with {'active': 'anomalie'} %}
+        </div>
+    </div>
+
+    <!-- Contenu -->
     <main class="container-fluid py-5">
-        <h1 class="mb-5 text-center">Liste Anomalies</h1>
+        <h1 class="text-center mb-4">Liste des Anomalies</h1>
 
         <div class="row justify-content-center">
-            {# Largeur de la colonne pour la carte du tableau #}
-            <div class="col-md-10 col-lg-8"> {# Ajusté pour correspondre à la largeur de l'image #}
-                <div class="card h-100">
-                    <div class="card-body p-0">
-                        <div class="table-responsive">
-                            <table class="table table-hover mb-0">
-                                <thead>
-                                    <tr>
-                                        <th scope="col" class="table-header-gray">Type d'anomalie</th>
-                                        <th scope="col" class="table-header-gray">Collaborateur</th>
-                                        <th scope="col" class="table-header-gray">date</th>
-                                        <th scope="col" class="table-header-gray"></th> {# Colonne vide pour le bouton #}
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {# Exemple de données. En production, ces données viendraient de votre backend. #}
-                                    <tr data-anomaly-id="1">
-                                        <td class="align-middle">Oubli de saisie</td>
-                                        <td class="align-middle">Collaborateur 1</td>
-                                        <td class="align-middle">25-07-2025</td>
-                                        <td class="text-center-buttons">
-                                            <button type="button" class="btn btn-sm btn-resolve btn-icon" title="Résoudre">
-                                                <i class="bi bi-check-circle"></i>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                    <tr data-anomaly-id="2">
-                                        <td class="align-middle">Surcharge</td>
-                                        <td class="align-middle">Collaborateur 2</td>
-                                        <td class="align-middle">25-07-2025</td>
-                                        <td class="text-center-buttons">
-                                            <button type="button" class="btn btn-sm btn-resolve btn-icon" title="Résoudre">
-                                                <i class="bi bi-check-circle"></i>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                    <tr data-anomaly-id="3">
-                                        <td class="align-middle">Sous-activité</td>
-                                        <td class="align-middle">Collaborateur 3</td>
-                                        <td class="align-middle">25-07-2026</td>
-                                        <td class="text-center-buttons">
-                                            <button type="button" class="btn btn-sm btn-resolve btn-icon" title="Résoudre">
-                                                <i class="bi bi-check-circle"></i>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                    {# Ajoutez d'autres lignes de données ici si nécessaire #}
-                                </tbody>
-                            </table>
+            <div class="col-md-10 col-lg-8">
+                {% for anomalie in anomalies %}
+                    <div class="anomaly-card" data-anomaly-id="{{ anomalie.idAnomalie }}">
+                        <div class="anomaly-header">
+                            <div>
+                                <div class="anomaly-message" id="message-{{ anomalie.idAnomalie }}">
+                                    {{ anomalie.message }}
+                                </div>
+                                <span class="show-more" onclick="toggleMessage({{ anomalie.idAnomalie }})">
+                                    Lire plus
+                                </span>
+                            </div>
+                            <form method="get" action="/manager/anomalie/resoudre/{{anomalie.idAnomalie}}">
+                                <button type="submit" class="btn btn-sm btn-resolve"
+                                        {% if anomalie.estResolue %}disabled{% endif %}>
+                                    <i class="bi bi-check-circle-fill"></i>
+                                </button>
+                            </form>
+                        </div>
+                        <br>
+                        <div class="anomaly-date">
+                            <i class="bi bi-clock"></i> {{ anomalie.dateAnomalie|date('d/m/Y H:i') }}
                         </div>
                     </div>
-                </div>
+                {% else %}
+                    <div class="alert alert-secondary text-center">
+                        <i class="bi bi-info-circle"></i> Aucune anomalie trouvée
+                    </div>
+                {% endfor %}
             </div>
         </div>
-
-        {% block page_content %}{% endblock %}
     </main>
 
-    <!-- Bootstrap JS CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
-    {% block javascripts %}{% endblock %}
-
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            document.querySelectorAll('.btn-resolve').forEach(button => {
-                button.addEventListener('click', function() {
-                    const row = this.closest('tr');
-                    const anomalyId = row.dataset.anomalyId;
-                    const anomalyType = row.querySelector('td:first-child').textContent;
-                    const collaborator = row.querySelector('td:nth-child(2)').textContent;
-                    const date = row.querySelector('td:nth-child(3)').textContent;
+        function toggleMessage(id) {
+            const message = document.getElementById(`message-${id}`);
+            const toggle = message.nextElementSibling;
 
-                    console.log(`Bouton 'Résoudre' cliqué pour l'anomalie ID: ${anomalyId}`);
-                    console.log(`Type: ${anomalyType}, Collaborateur: ${collaborator}, Date: ${date}`);
-
-                    // Désactiver le bouton et changer son texte pour indiquer qu'elle est résolue
-                    this.disabled = true;
-                    // Changer l'icône et la couleur pour indiquer "résolue"
-                    this.innerHTML = '<i class="bi bi-check-circle-fill"></i>'; // Icône remplie pour l'état résolu
-                    this.classList.remove('btn-resolve');
-                    this.classList.add('btn-success'); // Changer la couleur pour indiquer "résolue"
-
-                    // Ici, vous intégreriez votre logique pour envoyer la mise à jour au backend Symfony
-                    // pour marquer l'anomalie comme résolue dans la base de données.
-                    /*
-                    fetch(`/anomalies/${anomalyId}/resolve`, {
-                        method: 'POST', // Ou 'PUT'
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({ status: 'resolved' })
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        console.log('Anomalie résolue avec succès:', data);
-                        // Mettre à jour l'UI si nécessaire (ex: supprimer la ligne, changer la couleur de la ligne)
-                    })
-                    .catch(error => {
-                        console.error('Erreur lors de la résolution de l\'anomalie:', error);
-                        // Réactiver le bouton et afficher un message d'erreur si la requête échoue
-                        this.disabled = false;
-                        this.innerHTML = '<i class="bi bi-check-circle"></i>'; // Revenir à l'icône non remplie
-                        this.classList.remove('btn-success');
-                        this.classList.add('btn-resolve');
-                    });
-                    */
-                });
-            });
-        });
+            if (message.classList.contains('expanded')) {
+                message.classList.remove('expanded');
+                toggle.textContent = "Lire plus";
+            } else {
+                message.classList.add('expanded');
+                toggle.textContent = "Réduire";
+            }
+        }
     </script>
 </body>
 </html>

@@ -261,4 +261,44 @@ class TacheService
         $this->tacheRepository->supprimer($id_tache);
     }
 
+    public function en_retard_jour(): int {
+        $aujourdhui = new \DateTime('today');
+        return $this->tacheRepository->en_retard_non_terminee($aujourdhui) + $this->tacheRepository->en_retard($aujourdhui);
+    }
+
+    public function en_retard_semaine(): int {
+        $rep = 0;
+
+        $dates = $this->getJoursOuvrablesSemaine();
+        foreach ($dates as $date) {
+            $rep += $this->tacheRepository->en_retard_non_terminee($date) + $this->tacheRepository->en_retard($date);
+        }
+
+        return $rep;
+    }
+
+    public function evolution_retard(): array
+    {
+        $data = [];
+        $aujourdhui = new \DateTime();
+        $debutPeriode = (clone $aujourdhui)->modify('-27 days'); // 28 jours (4 semaines)
+
+        $dateCourante = clone $debutPeriode;
+        while ($dateCourante <= $aujourdhui) {
+            // Vérifier si ce n’est pas samedi (6) ou dimanche (0)
+            $jourSemaine = (int) $dateCourante->format('N'); // 1=lundi ... 7=dimanche
+            if ($jourSemaine < 6) { // seulement lundi à vendredi
+                $nbRetards = $this->tacheRepository->en_retard_non_terminee($dateCourante) + $this->tacheRepository->en_retard_non_terminee($dateCourante);
+                $data[] = [
+                    'date' => $dateCourante->format('Y-m-d'),
+                    'nb_retards' => $nbRetards
+                ];
+            }
+
+            $dateCourante->modify('+1 day');
+        }
+
+        return $data;
+    }
+
 }

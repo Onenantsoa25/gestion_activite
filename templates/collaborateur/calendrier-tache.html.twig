@@ -17,11 +17,12 @@
     <style>
         /* Styles pour le corps et le padding pour le sidebar */
         body {
-            padding-left: 280px; /* Largeur du sidebar */
+            /* padding-left: 280px; Largeur du sidebar */
+            padding-left: 0;
             background-color: #F5F5F5; /* Couleur de fond gris très doux pour le contenu principal */
         }
         /* Pour la responsivité sur mobile, vous pourriez vouloir cacher le sidebar fixe et utiliser un offcanvas */
-        @media (max-width: 767.98px) { /* Moins de 768px (taille md de Bootstrap) */
+        @media (max-width: 100%) { /* Moins de 768px (taille md de Bootstrap) */
             body {
                 padding-left: 0; /* Pas de padding sur mobile si le sidebar est un offcanvas */
             }
@@ -80,16 +81,16 @@
     </style>
     {% block stylesheets %}{% endblock %}
 </head>
-<body>
-    <div class="row" >
-    <div class="col-md-1">
+<body class="row g-0">
+    {# <div  > #}
+    {# <div class="col-md-3"> #}
     {# Inclusion directe du Sidebar #}
-    <div class="sidebar-fixed-desktop">
+    <div class="sidebar-fixed-desktop col-md-2">
         {% include 'components/sidebar.html.twig' with {'active': 'planning'} %}
     </div>
-    </div>
-    <div class="col-md-11">
-    <main class="container">
+    {# </div> #}
+    {# <div class="col-md-9"> #}
+    <main class="container col-md-10">
         <h1 class="mb-4 text-center">Planning</h1>
 
         <div class="mb-4 px-3">
@@ -145,7 +146,7 @@
         {# Ce bloc peut être rempli par les templates qui étendent ce layout #}
         {% block page_content %}{% endblock %}
     </main>
-    </div>
+    {# </div> #}
 
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
 

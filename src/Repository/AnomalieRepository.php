@@ -28,7 +28,7 @@ class AnomalieRepository extends ServiceEntityRepository
     public function analyse_oublie(): void{
         $conn = $this->getEntityManager()->getConnection(); 
 
-        $sql = "SELECT t.id_tache, t.tache, t.date_echeance FROM v_echeance_taches t where t.id_tache not in (SELECT id_tache from tache_terminee) AND t.date_echeance <= NOW() AND t.id_tache not in (SELECT id_tache from anomalie WHERE DATE(date_anomalie) = CURDATE() AND id_tache IS NOT NULL) AND t.id_tache NOT IN (SELECT id_tache FROM tache_supprimee)";
+        $sql = "SELECT t.id_tache, t.tache, t.date_echeance FROM v_echeance_taches t where t.id_tache not in (SELECT id_tache from tache_terminee) AND t.date_echeance <= NOW() AND t.id_tache not in (SELECT id_tache from anomalie WHERE id_tache IS NOT NULL) AND t.id_tache NOT IN (SELECT id_tache FROM tache_supprimee)";
         $stmt = $conn->prepare($sql);
         $resultSet = $stmt->execute();
         $rows = $resultSet->fetchAllAssociative();
@@ -76,7 +76,7 @@ class AnomalieRepository extends ServiceEntityRepository
     //             WHERE DATE(t.debut) = CURDATE() 
     //             AND t.id_tache NOT IN (SELECT id_tache from tache_terminee) 
     //             AND t.id_tache NOT IN (SELECT id_tache FROM tache_supprimee)
-    //             AND u.id_utilisateur NOT IN (SELECT id_utilisateur FROM anomalie WHERE DATE(date_anomalie) = CURDATE() AND id_type_anomalie = 2 AND est_resolue = 1) 
+    //             AND u.id_utilisateur NOT IN (SELECT id_utilisateur FROM anomalie WHERE id_type_anomalie = 2 AND est_resolue = 1) 
     //             GROUP BY u.id_utilisateur 
     //             HAVING total_heure >= :max_taches";
 
@@ -115,11 +115,11 @@ class AnomalieRepository extends ServiceEntityRepository
         //         WHERE DATE(t.debut) = CURDATE() 
         //         AND t.id_tache NOT IN (SELECT id_tache from tache_terminee) 
         //         AND t.id_tache NOT IN (SELECT id_tache FROM tache_supprimee)
-        //         AND u.id_utilisateur NOT IN (SELECT id_utilisateur FROM anomalie WHERE DATE(date_anomalie) = CURDATE() AND id_type_anomalie = 3 AND est_resolue = 1) 
+        //         AND u.id_utilisateur NOT IN (SELECT id_utilisateur FROM anomalie WHERE id_type_anomalie = 3 AND est_resolue = 1) 
         //         GROUP BY u.id_utilisateur 
         //         HAVING total_heure <= :min_taches";
 
-        $sql = "SELECT * FROM v_tache_non_terminee_utilisateur WHERE id_utilisateur NOT IN (SELECT id_utilisateur FROM anomalie WHERE DATE(date_anomalie) = CURDATE() AND id_type_anomalie = 3 AND est_resolue = 0) AND id_utilisateur IS NOT NULL";
+        $sql = "SELECT * FROM v_tache_non_terminee_utilisateur WHERE id_utilisateur NOT IN (SELECT id_utilisateur FROM anomalie WHERE id_type_anomalie = 3 AND est_resolue = 0) AND id_utilisateur IS NOT NULL";
 
         $stmt = $conn->prepare($sql);
         // $resultSet = $stmt->execute([
@@ -164,11 +164,11 @@ class AnomalieRepository extends ServiceEntityRepository
         //         WHERE DATE(t.debut) = CURDATE() 
         //         AND t.id_tache NOT IN (SELECT id_tache from tache_terminee) 
         //         AND t.id_tache NOT IN (SELECT id_tache FROM tache_supprimee)
-        //         AND u.id_utilisateur NOT IN (SELECT id_utilisateur FROM anomalie WHERE DATE(date_anomalie) = CURDATE() AND id_type_anomalie = 3 AND est_resolue = 1) 
+        //         AND u.id_utilisateur NOT IN (SELECT id_utilisateur FROM anomalie WHERE id_type_anomalie = 3 AND est_resolue = 1) 
         //         GROUP BY u.id_utilisateur 
         //         HAVING total_heure <= :min_taches";
 
-        $sql = "SELECT * FROM v_tache_non_terminee_utilisateur WHERE id_utilisateur NOT IN (SELECT id_utilisateur FROM anomalie WHERE DATE(date_anomalie) = CURDATE() AND id_type_anomalie = 2 AND est_resolue = 0) AND id_utilisateur IS NOT NULL";
+        $sql = "SELECT * FROM v_tache_non_terminee_utilisateur WHERE id_utilisateur NOT IN (SELECT id_utilisateur FROM anomalie WHERE id_type_anomalie = 2 AND est_resolue = 0) AND id_utilisateur IS NOT NULL";
 
         $stmt = $conn->prepare($sql);
         // $resultSet = $stmt->execute([

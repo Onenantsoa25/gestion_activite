@@ -82,6 +82,17 @@ class TacheController extends AbstractController
             return $this->redirectToRoute('insert_activite_manager');
         }
 
+        if ($date > $activite->getDateEcheance()) {
+            $this->addFlash('error', 'La date de la tâche dépasse la date limite de l’activité.');
+
+            return $this->render('manager/creation-tache.html.twig', [
+                'erreur' => "La date d'echeance des taches ne doivent pas depasser la date d'echeance de l'activite (".$activite->getDateEcheance()->format('d/m/Y').").",
+                'old_nom' => $nom,
+                'old_estimation' => $estimation,
+                'old_date' => $request->request->get('date'),
+            ]);
+        }
+
         $tache->setActivite($activite);
 
         $this->tacheService->insertion_manager($tache);
@@ -353,6 +364,12 @@ class TacheController extends AbstractController
                 'erreur' => "La date de planification doit etre inferieur a la date d'echeance. \n Date d'échéance : ".$tache->getDateEcheance()->format('d/m/Y'),
             ]);
         }
+        if($datePrevue < new \DateTime()){
+            return $this->render('collaborateur/planifier-tache.html.twig', [
+                'tache' => $tache,
+                'erreur' => "La date de planification doit etre dans le futur.",
+            ]);
+        }
         if (!$tache) {
             $this->addFlash('error', 'Tâche introuvable.');
             return $this->redirectToRoute('liste_taches_collab');
@@ -515,6 +532,27 @@ class TacheController extends AbstractController
         
         $date = new \DateTime($request->get('dateDebut'));
         $id = $request->get('id_tache');
+
+        $tache = $this->tacheService->findById($id);
+        if($tache->getDebut() == $date) {
+            return $this->render('collaborateur/replanification.html.twig', [
+                'id' => $id,
+                'erreur' => "La date de planification est la même que l'ancienne.",
+            ]);            
+        }
+        if($tache->getDateEcheance() < $date) {
+            return $this->render('collaborateur/replanification.html.twig', [
+                'id' => $id,
+                'erreur' => "La date de planification doit etre inferieur a la date d'echeance. \n Date d'échéance : ".$tache->getDateEcheance()->format('d/m/Y'),
+            ]);
+        }
+        if($date < new \DateTime()){
+            return $this->render('collaborateur/replanification.html.twig', [
+                'id' => $id,
+                'erreur' => "La date de planification doit etre dans le futur.",
+            ]);
+        }
+
         $this->tacheService->replanifier($id, $date);
         return $this->redirectToRoute('calendrier_tache_collab');
     }
@@ -594,6 +632,19 @@ class TacheController extends AbstractController
         }
 
         if ($tache->getDateEcheance() != $date) { // comparaison de valeur, pas de référence
+            if($date < new \DateTime()){
+                return $this->render('manager/modification-tache.html.twig', [
+                    'tache' => $tache,
+                    'erreur' => "La date d'échéance doit etre dans le futur.",
+                ]);
+            }
+            $date_activite = $tache->getActivite()->getDateEcheance();
+            if($date > $date_activite) {
+                return $this->render('manager/modification-tache.html.twig', [
+                    'tache' => $tache,
+                    'erreur' => "La date d'échéance de la tâche ne peut pas dépasser celle de l'activité (".$date_activite->format('d/m/Y').").",
+                ]);
+            }
             $tache->setDateEcheance($date);
             $hasChanged = true;
         }

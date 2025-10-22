@@ -144,7 +144,7 @@
     </li>
     <li>
       <a href="/manager/activites/soumises" class="nav-link {% if active == 'soumises' %} text-white active {% else %} text-dark {% endif %}">
-        <i class="bi bi-hourglass-split me-2"></i> <span>Activités soumises</span>
+        <i class="bi bi-hourglass-split me-2"></i> <span>Activités par collaborateur</span>
       </a>
     </li>
     <li>
@@ -180,6 +180,12 @@
 {# <main>
   <!-- Ton contenu ici -->
 </main> #}
+
+{% if erreur is defined %}
+  <script>
+    alert("{{ erreur|e('js') }}");
+  </script>
+{% endif %}
 
 <script>
   const toggleBtn = document.getElementById('toggleSidebarBtn');

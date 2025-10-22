@@ -149,6 +149,7 @@
                   id="taskName"
                   placeholder="Nom de la tâche"
                   name="nom"
+                  value="{{ old_nom|default('') }}"
                   required
                 />
               </div>
@@ -162,6 +163,7 @@
                   id="estimation"
                   name="estimation"
                   placeholder="Ex : 1.5 pour 1h30"
+                  value="{{ old_estimation|default('') }}"
                   required
                 />
               </div>
@@ -172,6 +174,7 @@
                   class="form-control"
                   id="dueDate"
                   name="date"
+                  value="{{ old_date|default('') }}"
                   required
                 />
               </div>

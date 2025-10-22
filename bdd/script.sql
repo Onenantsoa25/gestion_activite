@@ -23,3 +23,9 @@ INSERT INTO type_anomalie (type_anomalie) VALUES
 ("Oublie de saisie"), 
 ("surcharge"),
 ("sous-activite");
+
+SET @date_limite   = '2025-09-19';
+
+SELECT count(*) from v_echeance_taches where DATE(date_echeance) < @date_limite AND id_tache NOT IN (SELECT id_tache FROM tache_terminee);
+
+SELECT count(*) FROM v_echeance_taches t JOIN tache_terminee tt ON t.id_tache = tt.id_tache WHERE DATE(t.date_echeance) < DATE(tt.date_terminee) AND t.date_echeance = @date_limite;

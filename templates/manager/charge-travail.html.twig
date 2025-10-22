@@ -83,9 +83,9 @@
   </style>
   {% block stylesheets %}{% endblock %}
 </head>
-<body>
+<body class="row g-0" >
   <!-- Sidebar desktop -->
-  <div class="sidebar-fixed-desktop">
+  <div class="sidebar-fixed-desktop col-md-2 ">
     {% include 'components/sidebar-manager.html.twig' with {'active': 'charge'} %}
   </div>
 
@@ -109,7 +109,7 @@
   </div>
 
   <!-- Main -->
-  <main class="container-fluid py-5">
+  <main class="container-fluid py-5 col-md-10">
     <h1 class="mb-5 text-center">Charge de travail par personne</h1>
 
     <div class="row justify-content-center">

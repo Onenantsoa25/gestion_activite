@@ -86,20 +86,20 @@
     </style>
     {% block stylesheets %}{% endblock %}
 </head>
-<body>
-    <div class="row">
-    <div class="col-md-2">
+<body class="row g-0">
+    {# <div class="row g-0"> #}
+    {# <div class="col-md-2"> #}
     {# Inclusion directe du Sidebar #}
-    <div class="sidebar-fixed-desktop">
+    <div class="sidebar-fixed-desktop col-md-2">
         {% include 'components/sidebar.html.twig' with {'active': 'activite'} %}
     </div>
-    </div>
+    {# </div> #}
 
-    <div class="col-md-10">
-    <main class="container-fluid py-4">
+    {# <div class="col-md-10"> #}
+    <main class="container-fluid py-4 col-md-10">
         <h1 class="mb-4 text-center">Liste des activités</h1>
 
-        <div class="row g-4">
+        <div class="row g-0">
             {# Section du tableau des activités dans une carte #}
             <div class="col-md-12">
                 <div class="card h-100">
@@ -119,7 +119,7 @@
                                             <td class="align-middle">{{activite.activite}}</td>
                                             <td class="text-center-buttons">
                                                 <a href="/collaborateur/taches/activite?id_activite={{activite.id}}"><i class="bi bi-eye-fill view-icon action-icon" title="Voir"></i></a>
-                                                <i class="bi bi-stop-circle-fill end-icon action-icon action-icon" title="Terminer" ></i>
+                                                {# <i class="bi bi-stop-circle-fill end-icon action-icon action-icon" title="Terminer" ></i> #}
                                             </td>
                                         </tr>
                                     {% endfor %}
@@ -196,7 +196,7 @@
         //     });
         // });
     </script>
-    </div>
-    </div>
+    {# </div> #}
+    {# </div> #}
 </body>
 </html>

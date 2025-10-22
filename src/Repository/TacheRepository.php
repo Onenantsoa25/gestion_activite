@@ -1199,4 +1199,36 @@ class TacheRepository extends ServiceEntityRepository
         ]);
     }
 
+    public function en_retard_non_terminee($date): int {
+        $conn = $this->getEntityManager()->getConnection();
+        $sql = "SELECT count(*) as nb from v_echeance_taches where DATE(date_echeance) < :date_limite AND id_tache NOT IN (SELECT id_tache FROM tache_terminee)";
+        $stmt = $conn->prepare($sql);
+
+        // Exécuter la requête avec le paramètre
+        $result = $stmt->executeQuery(['date_limite' => $date->format('Y-m-d')])->fetchAssociative();
+
+        // Récupérer le résultat
+        // $result = $stmt->fetchAssociative();
+
+        // Retourner le nombre trouvé
+        return (int) $result['nb'];
+    }
+
+    public function en_retard($date): int {
+        $conn = $this->getEntityManager()->getConnection();
+        $sql = "SELECT count(*) as nb FROM v_echeance_taches t JOIN tache_terminee tt ON t.id_tache = tt.id_tache WHERE DATE(t.date_echeance) < DATE(tt.date_terminee) AND t.date_echeance = :date_limite;";
+        $stmt = $conn->prepare($sql);
+
+        // Exécuter la requête avec le paramètre
+        // $stmt->executeQuery(['date_limite' => $date]);
+        $result = $stmt->executeQuery(['date_limite' => $date->format('Y-m-d')])->fetchAssociative();
+
+        // Récupérer le résultat
+        // $result = $stmt->fetchAssociative();
+
+        // Retourner le nombre trouvé
+        return (int) $result['nb'];
+    }
+    
+
 }

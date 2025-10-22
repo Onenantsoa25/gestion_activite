@@ -15,23 +15,46 @@ use Symfony\Component\HttpFoundation\Session\SessionInterface;
 
 class LoginController extends AbstractController
 {
+    // #[Route('/', name: 'app_accueil')]
+    // public function page_login(AuthenticationUtils $authenticationUtils): Response
+    // {
+    //     // Si déjà authentifié, rediriger selon le rôle
+    //     if ($this->getUser()) {
+    //         return $this->redirectBasedOnRole();
+    //     }
+
+    //     // Récupérer l'erreur de connexion s'il y en a une
+    //     $error = $authenticationUtils->getLastAuthenticationError();
+    //     // Dernier nom d'utilisateur saisi
+    //     $lastUsername = $authenticationUtils->getLastUsername();
+        
+    //     return $this->render('login/login.html.twig', [
+    //         'error' => $error,
+    //         'last_username' => $lastUsername
+    //     ]);
+    // }
+
     #[Route('/', name: 'app_accueil')]
-    public function page_login(AuthenticationUtils $authenticationUtils): Response
+    public function page_login(AuthenticationUtils $authenticationUtils, Request $request): Response
     {
-        // Si déjà authentifié, rediriger selon le rôle
         if ($this->getUser()) {
             return $this->redirectBasedOnRole();
         }
 
-        // Récupérer l'erreur de connexion s'il y en a une
         $error = $authenticationUtils->getLastAuthenticationError();
-        // Dernier nom d'utilisateur saisi
         $lastUsername = $authenticationUtils->getLastUsername();
 
-        return $this->render('login/login.html.twig', [
-            'error' => $error,
-            'last_username' => $lastUsername
-        ]);
+        $data = [
+            'last_username' => $lastUsername,
+        ];
+
+        if ($error) {
+            $data['error'] = $error;
+        } else if ($request->get('error')) {
+            $data['error'] = $request->get('error');
+        }
+
+        return $this->render('login/login.html.twig', $data);
     }
 
     #[Route('/login', name: 'app_login')]
@@ -51,8 +74,8 @@ class LoginController extends AbstractController
 
         // Si erreur d'authentification
         if ($error) {
-            $this->addFlash('error', 'Identifiants invalides');
-            return $this->redirectToRoute('app_accueil');
+            // $this->addFlash('error', 'Identifiants invalides');
+            return $this->redirectToRoute('app_accueil', ['error' => 'Identifiants invalides']);
         }
 
         // Authentification réussie

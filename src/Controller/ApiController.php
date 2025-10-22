@@ -55,7 +55,7 @@ class ApiController extends AbstractController
             'nonTermine' => $this->tacheService->countTachesTermineesAujourdHui($utilisateur),
             'encours' => $this->tacheService->countTachesEnCours($utilisateur),
             'afaire' => $this->tacheService->countTachesAFaire($utilisateur),
-            'charges' => $this->tacheService->charges_semaine($utilisateur)
+            'charges' => $this->tacheService->charges_semaine($utilisateur),
         ]);
     }
 
@@ -81,6 +81,9 @@ class ApiController extends AbstractController
             'nonTermine' => $this->tacheService->countTachesTermineesAujourdHui_equipe(),
             'encours' => $this->tacheService->countTachesEnCours_equipe(),
             'afaire' => $this->tacheService->countTachesAFaire_equipe(),
+            'retard_jours' => $this->tacheService->en_retard_jour(),
+            'retard_semaine' => $this->tacheService->en_retard_semaine(),
+            'evolution' => $this->tacheService->evolution_retard(),
         ]);
 
     }
